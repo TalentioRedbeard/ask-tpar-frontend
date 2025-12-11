@@ -1,573 +1,619 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Ask-TPAR</title>
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1"
-    />
-    <style>
-      :root {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          sans-serif;
-        color-scheme: light dark;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <title>Ask-TPAR</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --cream: #f8f1e7;
+      --brown: #5a3b2e;
+      --blue: #0d6efd;
+      --orange: #ff8a3d;
+      --border-soft: #d5c4af;
+      --text-main: #2a241f;
+      --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.08);
+      --radius-xl: 18px;
+    }
 
-      body {
-        margin: 0;
-        padding: 0;
-        background: #0f172a;
-        color: #e5e7eb;
-        display: flex;
-        justify-content: center;
-      }
+    * {
+      box-sizing: border-box;
+    }
 
-      .app-shell {
-        width: 100%;
-        max-width: 1100px;
-        padding: 24px;
-        box-sizing: border-box;
-      }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--cream);
+      color: var(--text-main);
+    }
 
-      h1 {
-        margin: 0 0 4px;
-        font-size: 1.6rem;
-      }
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-      .subtitle {
-        margin-top: 2px;
-        margin-bottom: 16px;
-        font-size: 0.9rem;
-        color: #9ca3af;
-      }
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 22px;
+      background: linear-gradient(90deg, #3b4b6a, #1b2738);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 10;
+    }
 
+    header .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header img.logo {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 4px 6px;
+    }
+
+    header .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    header .title {
+      font-style: italic;
+      font-size: 1.4rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    header .subtitle {
+      font-size: 0.8rem;
+      opacity: 0.8;
+    }
+
+    /* Main layout */
+    main {
+      flex: 1;
+      padding: 18px 22px 28px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.2fr);
+      gap: 18px;
+    }
+
+    @media (max-width: 900px) {
       .layout {
-        display: grid;
-        grid-template-columns: minmax(0, 2.5fr) minmax(0, 2fr);
-        gap: 16px;
-        align-items: flex-start;
+        grid-template-columns: 1fr;
       }
+    }
 
-      @media (max-width: 900px) {
-        .layout {
-          grid-template-columns: minmax(0, 1fr);
-        }
-      }
+    .card {
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-soft);
+      padding: 16px 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-      .card {
-        background: #020617;
-        border-radius: 16px;
-        padding: 16px;
-        border: 1px solid rgba(148, 163, 184, 0.3);
-        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.8);
-      }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 2px;
+    }
 
-      label {
-        display: block;
-        font-size: 0.9rem;
-        margin-bottom: 6px;
-        color: #e5e7eb;
-      }
+    .card-title {
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--brown);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-      textarea {
-        width: 100%;
-        min-height: 80px;
-        max-height: 200px;
-        resize: vertical;
-        padding: 10px;
-        border-radius: 10px;
-        border: 1px solid rgba(148, 163, 184, 0.6);
-        font-family: inherit;
-        font-size: 0.95rem;
-        background: #020617;
-        color: #f9fafb;
-        box-sizing: border-box;
-      }
+    .pill {
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: #fff6ec;
+      color: #a04f00;
+    }
 
-      textarea:focus {
-        outline: none;
-        border-color: #22c55e;
-        box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.6);
-      }
+    .card-subtitle {
+      font-size: 0.78rem;
+      opacity: 0.75;
+    }
 
-      .controls {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 10px;
-        gap: 8px;
-      }
+    /* Plumbing theme line */
+    .plumbing-strip {
+      position: relative;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #ddd5c8;
+      margin-bottom: 8px;
+    }
 
-      .controls-left {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
+    .plumbing-strip::before,
+    .plumbing-strip::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        rgba(13, 110, 253, 0.95),
+        rgba(13, 110, 253, 0.95) 12px,
+        rgba(255, 138, 61, 0.95) 12px,
+        rgba(255, 138, 61, 0.95) 24px
+      );
+      opacity: 0.22;
+    }
 
-      .hint {
-        font-size: 0.75rem;
-        color: #9ca3af;
-      }
+    /* Form area */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        border-radius: 999px;
-        padding: 4px 10px;
-        border: 1px solid rgba(148, 163, 184, 0.6);
-        font-size: 0.75rem;
-        color: #e5e7eb;
-      }
+    label {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
 
-      .pill span.key {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 16px;
-        height: 16px;
-        border-radius: 4px;
-        background: #111827;
-        border: 1px solid rgba(148, 163, 184, 0.8);
-        font-size: 0.7rem;
-      }
+    textarea,
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 11px;
+      border-radius: 10px;
+      border: 1px solid #ccbca7;
+      resize: vertical;
+      font: inherit;
+      background: #fdf8f1;
+    }
 
-      .spinner {
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        border: 2px solid rgba(148, 163, 184, 0.3);
-        border-top-color: #22c55e;
-        animation: spin 0.8s linear infinite;
-      }
+    textarea:focus,
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--orange);
+      box-shadow: 0 0 0 1px rgba(255, 138, 61, 0.4);
+      background: #fffaf2;
+    }
 
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
+    textarea {
+      min-height: 80px;
+    }
 
-      button {
-        border-radius: 999px;
-        border: none;
-        padding: 6px 16px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: linear-gradient(135deg, #22c55e, #16a34a);
-        color: #022c22;
-        box-shadow: 0 10px 25px rgba(34, 197, 94, 0.35);
-      }
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
-      button:hover {
-        filter: brightness(1.05);
-      }
+    .row > * {
+      flex: 1;
+      min-width: 180px;
+    }
 
-      button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        box-shadow: none;
-      }
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+    }
 
-      .answer-panel {
-        margin-top: 14px;
-        padding: 10px;
-        border-radius: 12px;
-        border: 1px solid rgba(148, 163, 184, 0.6);
-        background: radial-gradient(circle at top left, #0f172a, #020617);
-        min-height: 60px;
-        white-space: pre-wrap;
-        font-size: 0.95rem;
-      }
+    .button-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
 
-      .answer-panel.empty {
-        opacity: 0.6;
-      }
+    button {
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 8px 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.12s ease;
+    }
 
-      .debug {
-        margin-top: 10px;
-        border-radius: 12px;
-        background: #020617;
-        padding: 10px;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-          "Liberation Mono", "Courier New", monospace;
-        font-size: 0.78rem;
-        max-height: 260px;
-        overflow: auto;
-        border: 1px solid rgba(55, 65, 81, 0.9);
-      }
+    button.primary {
+      background: linear-gradient(135deg, var(--blue), #184a9b);
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+    }
 
-      .status-line {
-        font-size: 0.8rem;
-        color: #9ca3af;
-      }
+    button.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(13, 110, 253, 0.35);
+    }
 
-      .status-line strong {
-        color: #e5e7eb;
-      }
+    button.secondary {
+      background: #fff;
+      border: 1px solid #cfbca5;
+      color: #5a4632;
+    }
 
-      .conversation-log {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        margin-top: 10px;
-      }
+    button.secondary:hover {
+      background: #fff7eb;
+    }
 
-      .turn {
-        border-radius: 10px;
-        padding: 8px 10px;
-        background: rgba(15, 23, 42, 0.9);
-        border: 1px solid rgba(75, 85, 99, 0.8);
-      }
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+      transform: none;
+      box-shadow: none;
+    }
 
-      .turn-header {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.75rem;
-        color: #9ca3af;
-        margin-bottom: 4px;
-      }
+    .status-pill {
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #f4ece1;
+      border: 1px solid #ddccb6;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-      .turn-role {
-        font-weight: 600;
-        letter-spacing: 0.04em;
-      }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #94c973;
+    }
 
-      .turn-body {
-        font-size: 0.85rem;
-      }
+    .dot.error {
+      background: #e55353;
+    }
 
-      .history-controls {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 4px;
-      }
+    /* Output */
+    .output {
+      flex: 1;
+      min-height: 120px;
+      padding: 10px 11px;
+      border-radius: 10px;
+      border: 1px dashed #c6b8a4;
+      background: #fffdf8;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+        "Courier New", monospace;
+      font-size: 0.86rem;
+      white-space: pre-wrap;
+      overflow-y: auto;
+      max-height: 360px;
+    }
 
-      .history-controls button {
-        padding: 4px 10px;
-        font-size: 0.75rem;
-        box-shadow: none;
-        background: #111827;
-        color: #e5e7eb;
-      }
+    .output.placeholder {
+      color: #9c8b76;
+    }
 
-      .history-controls button:hover {
-        background: #1f2937;
-      }
+    /* Debug panel */
+    .debug-note {
+      font-size: 0.8rem;
+      opacity: 0.75;
+    }
 
-      .chip-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 4px;
-      }
+    .debug-output {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+        "Courier New", monospace;
+      font-size: 0.8rem;
+      background: #111827;
+      color: #e5e7eb;
+      border-radius: 12px;
+      padding: 10px 11px;
+      max-height: 380px;
+      overflow: auto;
+      border: 1px solid #4b5563;
+      position: relative;
+    }
 
-      .chip {
-        border-radius: 999px;
-        padding: 3px 9px;
-        font-size: 0.75rem;
-        border: 1px solid rgba(148, 163, 184, 0.7);
-        color: #e5e7eb;
-        background: #020617;
-      }
+    .debug-output .badge {
+      position: absolute;
+      top: 7px;
+      right: 9px;
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(31, 41, 55, 0.9);
+      border: 1px solid rgba(156, 163, 175, 0.8);
+      color: #9ca3af;
+    }
 
-      .header-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 8px;
-      }
+    .debug-output pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
 
-      .header-right {
-        font-size: 0.8rem;
-        color: #9ca3af;
-      }
-
-      .memory-status {
-        font-weight: 500;
-      }
-
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 2px 8px;
-        border-radius: 999px;
-        border: 1px solid rgba(148, 163, 184, 0.7);
-        font-size: 0.75rem;
-      }
-
-      .badge-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 999px;
-        background: #22c55e;
-      }
-
-      .badge-label {
-        color: #e5e7eb;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="app-shell">
-      <div class="header-row">
-        <div>
-          <h1>Ask-TPAR</h1>
-          <div class="subtitle">
-            Ask about jobs, appointments, tech stats, or proximity. Ask-TPAR
-            keeps a short memory of the last few turns for better answers.
-          </div>
-        </div>
-        <div class="header-right">
-          <div class="badge">
-            <span class="badge-dot"></span>
-            <span class="badge-label">Live – internal only</span>
-          </div>
+    .footer-note {
+      margin-top: 8px;
+      font-size: 0.72rem;
+      opacity: 0.7;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <div class="logo-wrap">
+        <!-- If logo.png isn't present, it just hides -->
+        <img src="logo.png" alt="Company Logo" class="logo" onerror="this.style.display='none'" />
+        <div class="title-block">
+          <div class="title">Ask-TPAR</div>
+          <div class="subtitle">Tulsa Plumbing &amp; Remodeling • Stack-aware job assistant</div>
         </div>
       </div>
+    </header>
 
+    <main>
       <div class="layout">
-        <!-- Left: input + answer -->
-        <div class="card">
-          <label for="question-input">Ask a question</label>
-          <textarea
-            id="question-input"
-            placeholder="e.g., What jobs did Jake work in the last 30 days?"
-          ></textarea>
-
-          <div class="controls">
-            <div class="controls-left">
-              <div class="pill">
-                <span class="key">↵</span>
-                <span>Ask</span>
+        <!-- Left column: Question / Answer -->
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <span>QUESTION &amp; ANSWER</span>
+                <span class="pill">Live Stack</span>
+              </div>
+              <div class="card-subtitle">
+                Ask about jobs, calls, techs, or schedules. The right side shows the raw response from
+                Supabase.
               </div>
             </div>
-            <div class="controls-right">
-              <button id="ask-button">
+            <div id="connectionStatus" class="status-pill">
+              <span class="dot" id="statusDot"></span>
+              <span id="statusText">Idle</span>
+            </div>
+          </div>
+
+          <div class="plumbing-strip" aria-hidden="true"></div>
+
+          <div class="input-group">
+            <label for="question">Question</label>
+            <textarea
+              id="question"
+              placeholder="e.g. What jobs did Jake work in the last 30 days?"
+            ></textarea>
+
+            <div class="row">
+              <div>
+                <label for="context">Context (optional)</label>
+                <input
+                  type="text"
+                  id="context"
+                  placeholder="e.g. 'appointments_master' or leave blank"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <div class="button-row">
+              <button id="askButton" class="primary">
                 <span>Ask TPAR</span>
-                <span id="spinner" class="spinner" style="display: none"></span>
+              </button>
+              <button id="clearButton" class="secondary" type="button">
+                <span>Clear</span>
               </button>
             </div>
+            <div style="font-size: 0.75rem; opacity: 0.75">
+              Uses Supabase Edge Function:
+              <span style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas">
+                ask-tpar
+              </span>
+            </div>
           </div>
 
-          <div
-            id="answer-panel"
-            class="answer-panel empty"
-          >
-            Ask a question to see an answer here.
+          <div>
+            <label style="margin-top: 10px; display: block">Answer</label>
+            <div id="answerOutput" class="output placeholder">
+              Your answer will appear here.
+            </div>
           </div>
-        </div>
+        </section>
 
-        <!-- Right: conversation + debug -->
-        <div class="card">
-          <div class="history-controls">
+        <!-- Right column: Debug / Raw JSON -->
+        <section class="card">
+          <div class="card-header">
             <div>
-              <div class="status-line">
-                <strong>Conversation memory</strong> –
-                <span id="memory-status">0 turns stored</span>
+              <div class="card-title">
+                <span>DEBUG</span>
+                <span class="pill">Raw ask-tpar response</span>
               </div>
-              <div class="chip-row">
-                <span class="chip">Short rolling context</span>
-                <span class="chip">Last few Q&A pairs only</span>
-                <span class="chip">Tech + job focused</span>
+              <div class="card-subtitle">
+                If something blows up, this is where the truth lives. Paste this into ChatGPT when
+                we’re debugging.
               </div>
             </div>
-            <button id="clear-history">Clear history</button>
           </div>
 
-          <div id="conversation-log" class="conversation-log"></div>
+          <div class="plumbing-strip" aria-hidden="true"></div>
 
-          <div
-            id="debug-panel"
-            class="debug"
-            style="margin-top: 12px"
-          >
-            <div class="status-line">
-              <strong>Debug</strong> – raw JSON from ask-tpar will appear here.
-            </div>
-            <pre id="debug-json" style="margin-top: 6px; white-space: pre-wrap"></pre>
+          <div class="debug-note">
+            Debug – raw JSON (or whatever the function actually sent) from ask-tpar will appear
+            here.
           </div>
-        </div>
+
+          <div class="debug-output">
+            <div class="badge" id="debugStatus">no response yet</div>
+            <pre id="debugOutput">{}</pre>
+          </div>
+
+          <div class="footer-note">
+            Tip: if you see <code>Invalid JSON from ask-tpar</code>, the <code>raw</code> field
+            here will show the actual body the function returned.
+          </div>
+        </section>
       </div>
-    </div>
+    </main>
+  </div>
 
-    <script>
-      // ===== Config – replace these placeholders with your real values locally =====
-      const ASK_TPAR_ENDPOINT = "****your ask-tpar function URL****";
-      const SUPABASE_ANON_KEY = "****your anon key****";
+  <script>
+    // === CONFIG – YOU EDIT ONLY THESE TWO LINES ===
+    const ASK_TPAR_ENDPOINT = "https://bwpoqsfrygyopwxmegax.supabase.co/functions/v1/ask-tpar";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3cG9xc2ZyeWd5b3B3eG1lZ2F4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzNDAzMzksImV4cCI6MjA3ODkxNjMzOX0.jKw2v-grZu9eftZs4ARbMCCgwkhc5JQFMWNGtidzXfU";
+    // ===============================================
 
-      // We'll keep a short rolling context of last few Q&A messages.
-      // Each entry: { role: "user" | "assistant", content: string }
-      const conversationContext = [];
+    const questionEl = document.getElementById("question");
+    const contextEl = document.getElementById("context");
+    const askButton = document.getElementById("askButton");
+    const clearButton = document.getElementById("clearButton");
+    const answerOutputEl = document.getElementById("answerOutput");
+    const debugOutputEl = document.getElementById("debugOutput");
+    const debugStatusEl = document.getElementById("debugStatus");
+    const statusDotEl = document.getElementById("statusDot");
+    const statusTextEl = document.getElementById("statusText");
 
-      const questionInput = document.getElementById("question-input");
-      const askButton = document.getElementById("ask-button");
-      const spinner = document.getElementById("spinner");
-      const answerPanel = document.getElementById("answer-panel");
-      const debugPanel = document.getElementById("debug-panel");
-      const conversationLog = document.getElementById("conversation-log");
-      const memoryStatus = document.getElementById("memory-status");
-      const clearHistoryBtn = document.getElementById("clear-history");
-
-      function updateMemoryStatus() {
-        const turns = Math.floor(conversationContext.length / 2);
-        memoryStatus.textContent = `${turns} turn${
-          turns === 1 ? "" : "s"
-        } stored`;
+    function setStatus(state, message) {
+      if (state === "loading") {
+        statusDotEl.classList.remove("error");
+        statusDotEl.style.background = "#fbbf24";
+        statusTextEl.textContent = message || "Working…";
+      } else if (state === "ok") {
+        statusDotEl.classList.remove("error");
+        statusDotEl.style.background = "#94c973";
+        statusTextEl.textContent = message || "OK";
+      } else if (state === "error") {
+        statusDotEl.classList.add("error");
+        statusDotEl.style.background = "#e55353";
+        statusTextEl.textContent = message || "Error";
+      } else {
+        statusDotEl.classList.remove("error");
+        statusDotEl.style.background = "#9ca3af";
+        statusTextEl.textContent = message || "Idle";
       }
+    }
 
-      function renderConversation() {
-        conversationLog.innerHTML = "";
-        conversationContext.forEach((msg, idx) => {
-          const turn = document.createElement("div");
-          turn.className = "turn";
+    async function callAskTpar(question, context) {
+      const payload = { question, context };
 
-          const header = document.createElement("div");
-          header.className = "turn-header";
+      const res = await fetch(ASK_TPAR_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify(payload),
+      });
 
-          const roleSpan = document.createElement("span");
-          roleSpan.className = "turn-role";
-          roleSpan.textContent =
-            msg.role === "user" ? "YOU" : "ASK-TPAR";
+      const text = await res.text();
+      let json;
 
-          const idxSpan = document.createElement("span");
-          idxSpan.textContent = `#${idx + 1}`;
-
-          header.appendChild(roleSpan);
-          header.appendChild(idxSpan);
-
-          const body = document.createElement("div");
-          body.className = "turn-body";
-          body.textContent = msg.content;
-
-          turn.appendChild(header);
-          turn.appendChild(body);
-
-          conversationLog.appendChild(turn);
-        });
-      }
-
-      function setThinking(isThinking) {
-        askButton.disabled = isThinking;
-        spinner.style.display = isThinking ? "inline-block" : "none";
-      }
-
-      async function callAskTpar(question, context) {
-        const payload = {
-          question,
-          context,
-        };
-
-        const res = await fetch(ASK_TPAR_ENDPOINT, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify(payload),
-        });
-
-        const json = await res.json().catch(() => ({
+      try {
+        json = JSON.parse(text);
+      } catch (err) {
+        json = {
           ok: false,
           error: "Invalid JSON from ask-tpar",
-        }));
-
-        return { status: res.status, json };
+          raw: text,
+          status: res.status,
+        };
       }
 
-      async function handleAsk() {
-        const raw = questionInput.value.trim();
-        if (!raw) return;
+      return { status: res.status, json };
+    }
 
-        const question = raw;
-        questionInput.value = "";
-        setThinking(true);
-        answerPanel.classList.add("empty");
-        answerPanel.textContent = "Thinking...";
+    function renderDebug(status, json) {
+      debugStatusEl.textContent = `status ${status}`;
+      debugOutputEl.textContent = JSON.stringify(json, null, 2);
+    }
 
-        // Track user question in context
-        conversationContext.push({ role: "user", content: question });
+    function renderAnswer(json) {
+      answerOutputEl.classList.remove("placeholder");
 
-        // Keep only the last ~6-8 messages (3–4 turns)
-        while (conversationContext.length > 8) {
-          conversationContext.shift();
-        }
-
-        updateMemoryStatus();
-        renderConversation();
-
-        try {
-          const { status, json } = await callAskTpar(
-            question,
-            conversationContext,
-          );
-
-          const debugJsonEl = document.getElementById("debug-json");
-          debugJsonEl.textContent = JSON.stringify(json, null, 2);
-
-          if (!json.ok) {
-            answerPanel.classList.add("empty");
-            answerPanel.textContent =
-              json.error ||
-              `Error from ask-tpar (status ${status}). Check debug panel.`;
-          } else {
-            const answerText =
-              typeof json.answer === "string"
-                ? json.answer
-                : JSON.stringify(json.answer, null, 2);
-
-            answerPanel.classList.remove("empty");
-            answerPanel.textContent = answerText;
-
-            // Add assistant message to context
-            conversationContext.push({
-              role: "assistant",
-              content: answerText,
-            });
-
-            updateMemoryStatus();
-            renderConversation();
-          }
-        } catch (err) {
-          const debugJsonEl = document.getElementById("debug-json");
-          debugJsonEl.textContent = JSON.stringify(
-            { ok: false, error: err.message },
-            null,
-            2,
-          );
-
-          answerPanel.classList.add("empty");
-          answerPanel.textContent = `Request failed: ${err.message}`;
-        } finally {
-          setThinking(false);
-        }
+      if (!json) {
+        answerOutputEl.textContent = "No JSON returned from ask-tpar.";
+        return;
       }
 
-      askButton.addEventListener("click", handleAsk);
+      if (json.ok && json.answer) {
+        answerOutputEl.textContent = json.answer;
+      } else if (json.error) {
+        answerOutputEl.textContent = `Error: ${json.error}`;
+      } else {
+        answerOutputEl.textContent = JSON.stringify(json, null, 2);
+      }
+    }
 
-      questionInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          handleAsk();
+    async function handleAsk() {
+      const question = questionEl.value.trim();
+      const context = contextEl.value.trim() || null;
+
+      if (!question) {
+        questionEl.focus();
+        return;
+      }
+
+      askButton.disabled = true;
+      clearButton.disabled = true;
+      setStatus("loading", "Querying ask-tpar…");
+      answerOutputEl.classList.add("placeholder");
+      answerOutputEl.textContent = "Thinking through the live stack…";
+
+      try {
+        const { status, json } = await callAskTpar(question, context);
+
+        renderDebug(status, json);
+        renderAnswer(json);
+
+        if (status >= 200 && status < 300 && json && json.ok) {
+          setStatus("ok", "Response OK");
+        } else {
+          setStatus("error", "Function error");
         }
-      });
+      } catch (err) {
+        renderDebug(0, { ok: false, error: String(err) });
+        answerOutputEl.classList.remove("placeholder");
+        answerOutputEl.textContent = "Network or client-side error. Check debug panel.";
+        setStatus("error", "Client error");
+      } finally {
+        askButton.disabled = false;
+        clearButton.disabled = false;
+      }
+    }
 
-      clearHistoryBtn.addEventListener("click", () => {
-        conversationContext.splice(0, conversationContext.length);
-        updateMemoryStatus();
-        renderConversation();
-      });
+    askButton.addEventListener("click", handleAsk);
 
-      // Initialize
-      updateMemoryStatus();
-      renderConversation();
-    </script>
-  </body>
+    questionEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handleAsk();
+      }
+    });
+
+    clearButton.addEventListener("click", () => {
+      questionEl.value = "";
+      contextEl.value = "";
+      answerOutputEl.classList.add("placeholder");
+      answerOutputEl.textContent = "Your answer will appear here.";
+      debugOutputEl.textContent = "{}";
+      debugStatusEl.textContent = "no response yet";
+      setStatus("idle", "Idle");
+      questionEl.focus();
+    });
+
+    setStatus("idle", "Idle");
+  </script>
+</body>
 </html>
