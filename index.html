@@ -3,9 +3,571 @@
   <head>
     <meta charset="UTF-8" />
     <title>Ask-TPAR</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <style>
+      :root {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        color-scheme: light dark;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background: #0f172a;
+        color: #e5e7eb;
+        display: flex;
+        justify-content: center;
+      }
+
+      .app-shell {
+        width: 100%;
+        max-width: 1100px;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+
+      h1 {
+        margin: 0 0 4px;
+        font-size: 1.6rem;
+      }
+
+      .subtitle {
+        margin-top: 2px;
+        margin-bottom: 16px;
+        font-size: 0.9rem;
+        color: #9ca3af;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 2.5fr) minmax(0, 2fr);
+        gap: 16px;
+        align-items: flex-start;
+      }
+
+      @media (max-width: 900px) {
+        .layout {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      .card {
+        background: #020617;
+        border-radius: 16px;
+        padding: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.8);
+      }
+
+      label {
+        display: block;
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+        color: #e5e7eb;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 80px;
+        max-height: 200px;
+        resize: vertical;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.6);
+        font-family: inherit;
+        font-size: 0.95rem;
+        background: #020617;
+        color: #f9fafb;
+        box-sizing: border-box;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: #22c55e;
+        box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.6);
+      }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 10px;
+        gap: 8px;
+      }
+
+      .controls-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .hint {
+        font-size: 0.75rem;
+        color: #9ca3af;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 4px 10px;
+        border: 1px solid rgba(148, 163, 184, 0.6);
+        font-size: 0.75rem;
+        color: #e5e7eb;
+      }
+
+      .pill span.key {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        background: #111827;
+        border: 1px solid rgba(148, 163, 184, 0.8);
+        font-size: 0.7rem;
+      }
+
+      .spinner {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid rgba(148, 163, 184, 0.3);
+        border-top-color: #22c55e;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      button {
+        border-radius: 999px;
+        border: none;
+        padding: 6px 16px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: #022c22;
+        box-shadow: 0 10px 25px rgba(34, 197, 94, 0.35);
+      }
+
+      button:hover {
+        filter: brightness(1.05);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .answer-panel {
+        margin-top: 14px;
+        padding: 10px;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.6);
+        background: radial-gradient(circle at top left, #0f172a, #020617);
+        min-height: 60px;
+        white-space: pre-wrap;
+        font-size: 0.95rem;
+      }
+
+      .answer-panel.empty {
+        opacity: 0.6;
+      }
+
+      .debug {
+        margin-top: 10px;
+        border-radius: 12px;
+        background: #020617;
+        padding: 10px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+        font-size: 0.78rem;
+        max-height: 260px;
+        overflow: auto;
+        border: 1px solid rgba(55, 65, 81, 0.9);
+      }
+
+      .status-line {
+        font-size: 0.8rem;
+        color: #9ca3af;
+      }
+
+      .status-line strong {
+        color: #e5e7eb;
+      }
+
+      .conversation-log {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 10px;
+      }
+
+      .turn {
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(75, 85, 99, 0.8);
+      }
+
+      .turn-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: #9ca3af;
+        margin-bottom: 4px;
+      }
+
+      .turn-role {
+        font-weight: 600;
+        letter-spacing: 0.04em;
+      }
+
+      .turn-body {
+        font-size: 0.85rem;
+      }
+
+      .history-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+
+      .history-controls button {
+        padding: 4px 10px;
+        font-size: 0.75rem;
+        box-shadow: none;
+        background: #111827;
+        color: #e5e7eb;
+      }
+
+      .history-controls button:hover {
+        background: #1f2937;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 4px;
+      }
+
+      .chip {
+        border-radius: 999px;
+        padding: 3px 9px;
+        font-size: 0.75rem;
+        border: 1px solid rgba(148, 163, 184, 0.7);
+        color: #e5e7eb;
+        background: #020617;
+      }
+
+      .header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+
+      .header-right {
+        font-size: 0.8rem;
+        color: #9ca3af;
+      }
+
+      .memory-status {
+        font-weight: 500;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.7);
+        font-size: 0.75rem;
+      }
+
+      .badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: #22c55e;
+      }
+
+      .badge-label {
+        color: #e5e7eb;
+      }
+    </style>
   </head>
   <body>
-    <h1>Ask-TPAR Frontend</h1>
-    <p>If you can see this from Vercel, it worked.</p>
+    <div class="app-shell">
+      <div class="header-row">
+        <div>
+          <h1>Ask-TPAR</h1>
+          <div class="subtitle">
+            Ask about jobs, appointments, tech stats, or proximity. Ask-TPAR
+            keeps a short memory of the last few turns for better answers.
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="badge">
+            <span class="badge-dot"></span>
+            <span class="badge-label">Live – internal only</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="layout">
+        <!-- Left: input + answer -->
+        <div class="card">
+          <label for="question-input">Ask a question</label>
+          <textarea
+            id="question-input"
+            placeholder="e.g., What jobs did Jake work in the last 30 days?"
+          ></textarea>
+
+          <div class="controls">
+            <div class="controls-left">
+              <div class="pill">
+                <span class="key">↵</span>
+                <span>Ask</span>
+              </div>
+            </div>
+            <div class="controls-right">
+              <button id="ask-button">
+                <span>Ask TPAR</span>
+                <span id="spinner" class="spinner" style="display: none"></span>
+              </button>
+            </div>
+          </div>
+
+          <div
+            id="answer-panel"
+            class="answer-panel empty"
+          >
+            Ask a question to see an answer here.
+          </div>
+        </div>
+
+        <!-- Right: conversation + debug -->
+        <div class="card">
+          <div class="history-controls">
+            <div>
+              <div class="status-line">
+                <strong>Conversation memory</strong> –
+                <span id="memory-status">0 turns stored</span>
+              </div>
+              <div class="chip-row">
+                <span class="chip">Short rolling context</span>
+                <span class="chip">Last few Q&A pairs only</span>
+                <span class="chip">Tech + job focused</span>
+              </div>
+            </div>
+            <button id="clear-history">Clear history</button>
+          </div>
+
+          <div id="conversation-log" class="conversation-log"></div>
+
+          <div
+            id="debug-panel"
+            class="debug"
+            style="margin-top: 12px"
+          >
+            <div class="status-line">
+              <strong>Debug</strong> – raw JSON from ask-tpar will appear here.
+            </div>
+            <pre id="debug-json" style="margin-top: 6px; white-space: pre-wrap"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ===== Config – replace these placeholders with your real values locally =====
+      const ASK_TPAR_ENDPOINT = "****your ask-tpar function URL****";
+      const SUPABASE_ANON_KEY = "****your anon key****";
+
+      // We'll keep a short rolling context of last few Q&A messages.
+      // Each entry: { role: "user" | "assistant", content: string }
+      const conversationContext = [];
+
+      const questionInput = document.getElementById("question-input");
+      const askButton = document.getElementById("ask-button");
+      const spinner = document.getElementById("spinner");
+      const answerPanel = document.getElementById("answer-panel");
+      const debugPanel = document.getElementById("debug-panel");
+      const conversationLog = document.getElementById("conversation-log");
+      const memoryStatus = document.getElementById("memory-status");
+      const clearHistoryBtn = document.getElementById("clear-history");
+
+      function updateMemoryStatus() {
+        const turns = Math.floor(conversationContext.length / 2);
+        memoryStatus.textContent = `${turns} turn${
+          turns === 1 ? "" : "s"
+        } stored`;
+      }
+
+      function renderConversation() {
+        conversationLog.innerHTML = "";
+        conversationContext.forEach((msg, idx) => {
+          const turn = document.createElement("div");
+          turn.className = "turn";
+
+          const header = document.createElement("div");
+          header.className = "turn-header";
+
+          const roleSpan = document.createElement("span");
+          roleSpan.className = "turn-role";
+          roleSpan.textContent =
+            msg.role === "user" ? "YOU" : "ASK-TPAR";
+
+          const idxSpan = document.createElement("span");
+          idxSpan.textContent = `#${idx + 1}`;
+
+          header.appendChild(roleSpan);
+          header.appendChild(idxSpan);
+
+          const body = document.createElement("div");
+          body.className = "turn-body";
+          body.textContent = msg.content;
+
+          turn.appendChild(header);
+          turn.appendChild(body);
+
+          conversationLog.appendChild(turn);
+        });
+      }
+
+      function setThinking(isThinking) {
+        askButton.disabled = isThinking;
+        spinner.style.display = isThinking ? "inline-block" : "none";
+      }
+
+      async function callAskTpar(question, context) {
+        const payload = {
+          question,
+          context,
+        };
+
+        const res = await fetch(ASK_TPAR_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const json = await res.json().catch(() => ({
+          ok: false,
+          error: "Invalid JSON from ask-tpar",
+        }));
+
+        return { status: res.status, json };
+      }
+
+      async function handleAsk() {
+        const raw = questionInput.value.trim();
+        if (!raw) return;
+
+        const question = raw;
+        questionInput.value = "";
+        setThinking(true);
+        answerPanel.classList.add("empty");
+        answerPanel.textContent = "Thinking...";
+
+        // Track user question in context
+        conversationContext.push({ role: "user", content: question });
+
+        // Keep only the last ~6-8 messages (3–4 turns)
+        while (conversationContext.length > 8) {
+          conversationContext.shift();
+        }
+
+        updateMemoryStatus();
+        renderConversation();
+
+        try {
+          const { status, json } = await callAskTpar(
+            question,
+            conversationContext,
+          );
+
+          const debugJsonEl = document.getElementById("debug-json");
+          debugJsonEl.textContent = JSON.stringify(json, null, 2);
+
+          if (!json.ok) {
+            answerPanel.classList.add("empty");
+            answerPanel.textContent =
+              json.error ||
+              `Error from ask-tpar (status ${status}). Check debug panel.`;
+          } else {
+            const answerText =
+              typeof json.answer === "string"
+                ? json.answer
+                : JSON.stringify(json.answer, null, 2);
+
+            answerPanel.classList.remove("empty");
+            answerPanel.textContent = answerText;
+
+            // Add assistant message to context
+            conversationContext.push({
+              role: "assistant",
+              content: answerText,
+            });
+
+            updateMemoryStatus();
+            renderConversation();
+          }
+        } catch (err) {
+          const debugJsonEl = document.getElementById("debug-json");
+          debugJsonEl.textContent = JSON.stringify(
+            { ok: false, error: err.message },
+            null,
+            2,
+          );
+
+          answerPanel.classList.add("empty");
+          answerPanel.textContent = `Request failed: ${err.message}`;
+        } finally {
+          setThinking(false);
+        }
+      }
+
+      askButton.addEventListener("click", handleAsk);
+
+      questionInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          handleAsk();
+        }
+      });
+
+      clearHistoryBtn.addEventListener("click", () => {
+        conversationContext.splice(0, conversationContext.length);
+        updateMemoryStatus();
+        renderConversation();
+      });
+
+      // Initialize
+      updateMemoryStatus();
+      renderConversation();
+    </script>
   </body>
 </html>
