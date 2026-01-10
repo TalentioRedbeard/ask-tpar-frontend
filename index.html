@@ -2,431 +2,346 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ask-TPAR</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root {
-      --cream: #f8f1e7;
-      --brown: #5a3b2e;
-      --blue: #0d6efd;
-      --orange: #ff8a3d;
-      --border-soft: #d5c4af;
-      --text-main: #2a241f;
-      --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.08);
-      --radius-xl: 18px;
+      --bg: #0b1220;
+      --panel: rgba(255, 255, 255, 0.06);
+      --panel-strong: rgba(255, 255, 255, 0.10);
+      --border: rgba(255, 255, 255, 0.12);
+      --text: rgba(255, 255, 255, 0.92);
+      --muted: rgba(255, 255, 255, 0.68);
+      --muted2: rgba(255, 255, 255, 0.55);
+      --accent: #38bdf8;
+      --ok: #34d399;
+      --warn: #fbbf24;
+      --err: #fb7185;
+      --shadow: 0 18px 55px rgba(0,0,0,0.45);
+      --radius: 18px;
+      --radius2: 14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--cream);
-      color: var(--text-main);
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(1100px 700px at 15% 10%, rgba(56, 189, 248, 0.22), transparent 55%),
+        radial-gradient(900px 700px at 85% 25%, rgba(52, 211, 153, 0.14), transparent 50%),
+        radial-gradient(700px 600px at 50% 90%, rgba(251, 113, 133, 0.08), transparent 55%),
+        linear-gradient(180deg, #050816 0%, #0b1220 100%);
+      min-height: 100vh;
     }
 
     .app-shell {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 18px 48px;
     }
 
-    /* Header */
     header {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 16px;
-      padding: 14px 22px;
-      background: linear-gradient(90deg, #3b4b6a, #1b2738);
-      color: #fff;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      z-index: 10;
+      margin-bottom: 18px;
     }
 
-    header .logo-wrap {
+    .logo-wrap {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 14px;
     }
 
-    header img.logo {
-      height: 40px;
-      width: auto;
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.08);
       object-fit: contain;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 4px 6px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.35);
     }
 
-    header .title-block {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
+    .title-block .title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
     }
 
-    header .title {
-      font-style: italic;
-      font-size: 1.4rem;
-      font-weight: 500;
-      letter-spacing: 0.04em;
-    }
-
-    header .subtitle {
-      font-size: 0.8rem;
-      opacity: 0.8;
-    }
-
-    /* Main layout */
-    main {
-      flex: 1;
-      padding: 18px 22px 28px;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.2fr);
-      gap: 18px;
-    }
-
-    @media (max-width: 900px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.92);
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--border-soft);
-      box-shadow: var(--shadow-soft);
-      padding: 16px 16px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 2px;
-    }
-
-    .card-title {
-      font-size: 0.95rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: var(--brown);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .pill {
-      font-size: 0.7rem;
-      padding: 2px 7px;
-      border-radius: 999px;
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      background: #fff6ec;
-      color: #a04f00;
-    }
-
-    .card-subtitle {
-      font-size: 0.78rem;
-      opacity: 0.75;
-    }
-
-    /* Plumbing theme line */
-    .plumbing-strip {
-      position: relative;
-      height: 10px;
-      border-radius: 999px;
-      overflow: hidden;
-      background: #ddd5c8;
-      margin-bottom: 8px;
-    }
-
-    .plumbing-strip::before,
-    .plumbing-strip::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        90deg,
-        rgba(13, 110, 253, 0.95),
-        rgba(13, 110, 253, 0.95) 12px,
-        rgba(255, 138, 61, 0.95) 12px,
-        rgba(255, 138, 61, 0.95) 24px
-      );
-      opacity: 0.22;
-    }
-
-    /* Form area */
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    label {
-      font-size: 0.85rem;
-      font-weight: 500;
-    }
-
-    textarea,
-    input[type="text"],
-    input[type="password"] {
-      width: 100%;
-      padding: 10px 11px;
-      border-radius: 10px;
-      border: 1px solid #ccbca7;
-      resize: vertical;
-      font: inherit;
-      background: #fdf8f1;
-    }
-
-    textarea:focus,
-    input[type="text"]:focus {
-      outline: none;
-      border-color: var(--orange);
-      box-shadow: 0 0 0 1px rgba(255, 138, 61, 0.4);
-      background: #fffaf2;
-    }
-
-    textarea {
-      min-height: 80px;
-    }
-
-    .row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .row > * {
-      flex: 1;
-      min-width: 180px;
-    }
-
-    .actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      margin-top: 4px;
-    }
-
-    .button-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    button {
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.9rem;
-      padding: 8px 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: 500;
-      transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.12s ease;
-    }
-
-    button.primary {
-      background: linear-gradient(135deg, var(--blue), #184a9b);
-      color: #fff;
-      box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
-    }
-
-    button.primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 14px rgba(13, 110, 253, 0.35);
-    }
-
-    button.secondary {
-      background: #fff;
-      border: 1px solid #cfbca5;
-      color: #5a4632;
-    }
-
-    button.secondary:hover {
-      background: #fff7eb;
-    }
-
-    button:disabled {
-      opacity: 0.6;
-      cursor: default;
-      transform: none;
-      box-shadow: none;
+    .title-block .subtitle {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 2px;
     }
 
     .status-pill {
-      font-size: 0.8rem;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: #f4ece1;
-      border: 1px solid #ddccb6;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.06);
+      border-radius: 999px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      user-select: none;
     }
 
     .dot {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 999px;
-      background: #94c973;
+      background: #9ca3af;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.07);
     }
 
-    .dot.error {
-      background: #e55353;
+    .dot.error { background: var(--err); }
+    .dot.ok { background: var(--ok); }
+    .dot.warn { background: var(--warn); }
+
+    .status-pill span {
+      font-size: 12.5px;
+      color: var(--muted);
+      white-space: nowrap;
     }
 
-    /* Output */
+    main { margin-top: 14px; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.45fr 0.95fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 14px 16px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .card-title {
+      font-weight: 700;
+      font-size: 13.5px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.82);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pill {
+      font-size: 11px;
+      padding: 3px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.04);
+      letter-spacing: 0;
+      text-transform: none;
+      font-weight: 600;
+    }
+
+    .card-body { padding: 16px; }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    textarea, input[type="text"], input[type="password"] {
+      width: 100%;
+      border-radius: var(--radius2);
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.18);
+      padding: 12px 12px;
+      color: var(--text);
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+      font-family: var(--sans);
+      font-size: 14px;
+    }
+
+    textarea { min-height: 112px; resize: vertical; }
+
+    textarea:focus, input:focus {
+      border-color: rgba(56,189,248,0.65);
+      box-shadow:
+        0 0 0 3px rgba(56,189,248,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+    @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid rgba(56,189,248,0.45);
+      background: linear-gradient(180deg, rgba(56,189,248,0.23), rgba(56,189,248,0.10));
+      color: rgba(255,255,255,0.92);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: transform 0.05s ease, filter 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+      user-select: none;
+    }
+
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: translateY(1px); }
+    button.secondary {
+      border-color: rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.86);
+      font-weight: 650;
+    }
+    button.danger {
+      border-color: rgba(251,113,133,0.45);
+      background: linear-gradient(180deg, rgba(251,113,133,0.20), rgba(251,113,133,0.08));
+    }
+    button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
     .output {
-      flex: 1;
-      min-height: 120px;
-      padding: 10px 11px;
-      border-radius: 10px;
-      border: 1px dashed #c6b8a4;
-      background: #fffdf8;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-        "Courier New", monospace;
-      font-size: 0.86rem;
-      white-space: pre-wrap;
-      overflow-y: auto;
-      max-height: 360px;
-    }
-
-    .output.placeholder {
-      color: #9c8b76;
-    }
-
-    /* Debug panel */
-    .debug-note {
-      font-size: 0.8rem;
-      opacity: 0.75;
-    }
-
-    .debug-output {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-        "Courier New", monospace;
-      font-size: 0.8rem;
-      background: #111827;
-      color: #e5e7eb;
-      border-radius: 12px;
-      padding: 10px 11px;
-      max-height: 380px;
-      overflow: auto;
-      border: 1px solid #4b5563;
-      position: relative;
-    }
-
-    .debug-output .badge {
-      position: absolute;
-      top: 7px;
-      right: 9px;
-      font-size: 0.7rem;
-      padding: 2px 7px;
-      border-radius: 999px;
-      background: rgba(31, 41, 55, 0.9);
-      border: 1px solid rgba(156, 163, 175, 0.8);
-      color: #9ca3af;
-    }
-
-    .debug-output pre {
-      margin: 0;
+      border-radius: var(--radius2);
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.18);
+      padding: 12px 12px;
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.45;
       white-space: pre-wrap;
       word-break: break-word;
+      min-height: 190px;
     }
 
+    .output.placeholder { color: rgba(255,255,255,0.55); }
+
+    .debug-output {
+      border-radius: var(--radius2);
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.22);
+      padding: 10px;
+      font-family: var(--mono);
+      font-size: 12px;
+      overflow: auto;
+      max-height: 520px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      user-select: none;
+    }
+
+    .badge.ok { border-color: rgba(52,211,153,0.35); background: rgba(52,211,153,0.08); color: rgba(209,250,229,0.95); }
+    .badge.err { border-color: rgba(251,113,133,0.35); background: rgba(251,113,133,0.09); color: rgba(255,228,230,0.96); }
+    .badge.warn { border-color: rgba(251,191,36,0.35); background: rgba(251,191,36,0.10); color: rgba(255,247,237,0.96); }
+
     .footer-note {
-      margin-top: 8px;
-      font-size: 0.72rem;
-      opacity: 0.7;
-      text-align: right;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted2);
+      line-height: 1.4;
+    }
+
+    .debug-note {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted2);
+    }
+
+    .plumbing-strip {
+      height: 10px;
+      background: linear-gradient(90deg, rgba(56,189,248,0.45), rgba(52,211,153,0.35), rgba(251,113,133,0.25));
+      border-top: 1px solid rgba(255,255,255,0.10);
+      border-bottom: 1px solid rgba(255,255,255,0.10);
     }
   </style>
 </head>
+
 <body>
   <div class="app-shell">
     <header>
       <div class="logo-wrap">
-        <!-- If logo.png isn't present, it just hides -->
         <img src="logo.png" alt="Company Logo" class="logo" onerror="this.style.display='none'" />
         <div class="title-block">
           <div class="title">Ask-TPAR</div>
           <div class="subtitle">Tulsa Plumbing &amp; Remodeling • Stack-aware job assistant</div>
         </div>
       </div>
+
+      <div class="status-pill">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">Idle</span>
+      </div>
     </header>
 
     <main>
       <div class="layout">
-        <!-- Left column: Question / Answer -->
         <section class="card">
           <div class="card-header">
-            <div>
-              <div class="card-title">
-                <span>QUESTION &amp; ANSWER</span>
-                <span class="pill">Live Stack</span>
-              </div>
-              <div class="card-subtitle">
-                Ask about jobs, calls, techs, or schedules. The right side shows the raw response from
-                Supabase.
-              </div>
-            </div>
-            <div id="connectionStatus" class="status-pill">
-              <span class="dot" id="statusDot"></span>
-              <span id="statusText">Idle</span>
+            <div class="card-title">
+              <span>Question</span>
+              <span class="pill">Live DB / functions context</span>
             </div>
           </div>
+          <div class="card-body">
+            <label>Your question</label>
+            <textarea id="question" placeholder="Ask something like: 'Show me today's jobs', 'What happened with call linking yesterday?', 'Why is invoice.paid failing?'"></textarea>
 
-          <div class="plumbing-strip" aria-hidden="true"></div>
+            <label style="margin-top: 10px">Context (optional)</label>
+            <textarea id="context" placeholder="Extra context: time window, job id, customer name, assumptions, etc."></textarea>
 
-          <div class="input-group">
-            <label for="question">Question</label>
-            <textarea
-              id="question"
-              placeholder="e.g. What jobs did Jake work in the last 30 days?"
-            ></textarea>
-
-            <div class="row">
-              <div>
-                <label for="context">Context (optional)</label>
-                <input
-                  type="text"
-                  id="context"
-                  placeholder="e.g. 'appointments_master' or leave blank"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div class="actions">
             <div class="button-row">
-              <button id="askButton" class="primary">
-                <span>Ask TPAR</span>
-              </button>
-              <button id="clearButton" class="secondary" type="button">
-                <span>Clear</span>
-              </button>
+              <button id="askButton" type="button" disabled>Ask</button>
+              <button id="clearButton" class="secondary" type="button">Clear</button>
             </div>
-            <div style="font-size: 0.75rem; opacity: 0.75">
-              Uses Supabase Edge Function:
-              <span style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas">
-                ask-tpar
-              </span>
-            </div>
-          </div>
 
-          <div>
             <label style="margin-top: 10px; display: block">Answer</label>
             <div id="answerOutput" class="output placeholder">
               Your answer will appear here.
@@ -434,7 +349,6 @@
           </div>
         </section>
 
-        <!-- Right column: Debug / Raw JSON -->
         <section class="card">
           <div class="card-header">
             <div>
@@ -442,8 +356,8 @@
                 <span>DEBUG</span>
                 <span class="pill">Raw ask-tpar response</span>
               </div>
-              <div class="card-subtitle">
-                If something blows up, this is where the truth lives. Paste this into ChatGPT when
+              <div class="footer-note">
+                This panel shows the exact function response. Use it to copy/paste into ChatGPT when
                 we’re debugging.
               </div>
             </div>
@@ -451,7 +365,7 @@
 
           <div class="plumbing-strip" aria-hidden="true"></div>
 
-          <div class="input-group" style="margin-top: 2px">
+          <div class="input-group" style="margin-top: 2px; padding: 16px">
             <label>Sign in (required)</label>
             <div class="row">
               <div>
@@ -463,51 +377,45 @@
             </div>
 
             <div class="button-row">
-              <button id="loginButton" class="secondary" type="button">
-                <span>Sign In</span>
-              </button>
-              <button id="signupButton" class="secondary" type="button">
-                <span>Sign Up</span>
-              </button>
-              <button id="forgotButton" class="secondary" type="button">
-                <span>Forgot Password</span>
-              </button>
-              <button id="logoutButton" class="secondary" type="button" disabled>
-                <span>Sign Out</span>
-              </button>
+              <button id="loginButton" class="secondary" type="button"><span>Sign In</span></button>
+              <button id="signupButton" class="secondary" type="button"><span>Sign Up</span></button>
+              <button id="forgotButton" class="secondary" type="button"><span>Forgot Password</span></button>
+              <button id="logoutButton" class="secondary" type="button" disabled><span>Sign Out</span></button>
             </div>
 
             <div class="debug-note" id="authStatus">Not signed in</div>
-          </div>
 
-          <div class="debug-note">
-            Debug – raw JSON (or whatever the function actually sent) from ask-tpar will appear
-            here.
-          </div>
+            <div class="debug-note">
+              Debug – raw JSON (or whatever the function actually sent) from ask-tpar will appear here.
+            </div>
 
-          <div class="debug-output">
-            <div class="badge" id="debugStatus">no response yet</div>
-            <pre id="debugOutput">{}</pre>
-          </div>
+            <div class="debug-output">
+              <div class="badge" id="debugStatus">no response yet</div>
+              <pre id="debugOutput">{}</pre>
+            </div>
 
-          <div class="footer-note">
-            Tip: if you see <code>Invalid JSON from ask-tpar</code>, the <code>raw</code> field
-            here will show the actual body the function returned.
+            <div class="footer-note">
+              Tip: if you see <code>Invalid JSON from ask-tpar</code>, the <code>raw</code> field
+              here will show the actual body the function returned.
+            </div>
           </div>
         </section>
       </div>
     </main>
   </div>
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+  <!-- UMD build: avoids ESM import failures that make buttons “do nothing” -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ===== CONFIG (edit these before deploy) =====
+    const BUILD_ID = "****BUILD_ID_CHANGE_EACH_DEPLOY****";
+    const SUPABASE_URL = "https://****proj_ref****.supabase.co";
+    const SUPABASE_ANON_KEY = "****PUBLIC_ANON_KEY****";
+    const ASK_TPAR_ENDPOINT = `${SUPABASE_URL}/functions/v1/ask-tpar`;
+    // ============================================
 
-    // === CONFIG – YOU EDIT THESE LINES ===
-    const SUPABASE_URL = "https://bwpoqsfrygyopwxmegax.supabase.co";
-    const ASK_TPAR_ENDPOINT = `${SUPABASE_URL}/functions/v1/ask-tpar';
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3cG9xc2ZyeWd5b3B3eG1lZ2F4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzkyNTcsImV4cCI6MjA4MjM5OTI1N30.HMwTK2obYHnv96hOcB6XMSkPXJicWL4nhUS2c7wUb2Q";
-    // ===================================
-
+    // Use the UMD build loaded via <script src=...> (no ESM import, avoids “dead buttons” failures)
+    const { createClient } = window.supabase;
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const questionEl = document.getElementById("question");
@@ -528,6 +436,32 @@
     const logoutButton = document.getElementById("logoutButton");
     const authStatusEl = document.getElementById("authStatus");
 
+
+    // ===== PROOF THE SCRIPT IS RUNNING (shows in UI + console) =====
+    try { authStatusEl.textContent = `JS loaded (${BUILD_ID})`; } catch (_) {}
+    console.log("Ask-TPAR frontend loaded", BUILD_ID);
+
+    window.addEventListener("error", (e) => {
+      const msg = e?.message || e?.type || "Unknown error";
+      try { authStatusEl.textContent = `JS ERROR: ${msg}`; } catch (_) {}
+      console.error("JS ERROR:", e);
+    });
+
+    window.addEventListener("unhandledrejection", (e) => {
+      const msg = e?.reason?.message || String(e?.reason || e);
+      try { authStatusEl.textContent = `PROMISE ERROR: ${msg}`; } catch (_) {}
+      console.error("PROMISE ERROR:", e);
+    });
+
+    // Expose for debugging in DevTools: window.__tpar.supabase, window.__tpar.showToken()
+    window.__tpar = { BUILD_ID, SUPABASE_URL, ASK_TPAR_ENDPOINT, supabase };
+    window.__tpar.showToken = async () => {
+      const { data } = await supabase.auth.getSession();
+      return data.session?.access_token || null;
+    };
+    // =============================================================
+
+
     function setStatus(state, message) {
       if (state === "loading") {
         statusDotEl.classList.remove("error");
@@ -535,11 +469,11 @@
         statusTextEl.textContent = message || "Working…";
       } else if (state === "ok") {
         statusDotEl.classList.remove("error");
-        statusDotEl.style.background = "#94c973";
+        statusDotEl.style.background = "#34d399";
         statusTextEl.textContent = message || "OK";
       } else if (state === "error") {
         statusDotEl.classList.add("error");
-        statusDotEl.style.background = "#e55353";
+        statusDotEl.style.background = "#fb7185";
         statusTextEl.textContent = message || "Error";
       } else {
         statusDotEl.classList.remove("error");
@@ -548,17 +482,16 @@
       }
     }
 
-
     function setAuthUI(session) {
       const signedIn = Boolean(session && session.user);
       if (signedIn) {
         const email = session.user.email || "signed in";
-        authStatusEl.textContent = `Signed in as ${email}`;
+        authStatusEl.textContent = `Signed in as ${email} • ${BUILD_ID}`;
         loginButton.disabled = true;
         logoutButton.disabled = false;
         askButton.disabled = false;
       } else {
-        authStatusEl.textContent = "Not signed in";
+        authStatusEl.textContent = `Not signed in • ${BUILD_ID}`;
         loginButton.disabled = false;
         logoutButton.disabled = true;
         askButton.disabled = true;
@@ -580,6 +513,7 @@
 
     loginButton.addEventListener("click", async () => {
       try {
+        console.log("Sign In clicked");
         const email = (authEmailEl.value || "").trim();
         const password = authPasswordEl.value || "";
         if (!email || !password) {
@@ -591,6 +525,7 @@
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         await refreshAuthUI();
+        authStatusEl.textContent = `Signed in. (${BUILD_ID})`;
       } catch (e) {
         authStatusEl.textContent = `Sign-in failed: ${e?.message || String(e)}`;
       } finally {
@@ -614,7 +549,8 @@
           options: { emailRedirectTo: window.location.href },
         });
         if (error) throw error;
-        authStatusEl.textContent = "Sign-up sent. Check your email if confirmation is required, then Sign In.";
+        await refreshAuthUI();
+        authStatusEl.textContent = "Sign-up OK. If email confirmation is enabled, check your inbox.";
       } catch (e) {
         authStatusEl.textContent = `Sign-up failed: ${e?.message || String(e)}`;
       } finally {
@@ -646,8 +582,10 @@
     logoutButton.addEventListener("click", async () => {
       try {
         logoutButton.disabled = true;
-        await supabase.auth.signOut();
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
         await refreshAuthUI();
+        authStatusEl.textContent = `Signed out. (${BUILD_ID})`;
       } catch (e) {
         authStatusEl.textContent = `Sign-out failed: ${e?.message || String(e)}`;
       } finally {
@@ -667,75 +605,82 @@
         if (error) {
           authStatusEl.textContent = `Password update failed: ${error.message}`;
         } else {
-          authStatusEl.textContent = "Password updated. You should now be signed in.";
-          await refreshAuthUI();
+          authStatusEl.textContent = "Password updated. You can sign in now.";
         }
       }
     });
 
     async function callAskTpar(question, context) {
-  const payload = {
-    question,
-    context,
-  };
+      const payload = { question, context };
 
-  const res = await fetch(ASK_TPAR_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${await requireAccessToken()}`,
-    },
+      const res = await fetch(ASK_TPAR_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${await requireAccessToken()}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
-    body: JSON.stringify(payload),
-  });
+      const text = await res.text();
+      let json;
 
-  const text = await res.text();
-  let json;
+      try {
+        json = JSON.parse(text);
+      } catch (err) {
+        json = {
+          ok: false,
+          error: "Invalid JSON from ask-tpar",
+          raw: text,
+          status: res.status,
+        };
+      }
 
-  try {
-    json = JSON.parse(text);
-  } catch (err) {
-    json = {
-      ok: false,
-      error: "Invalid JSON from ask-tpar",
-      raw: text,
-      status: res.status,
-    };
-  }
-
-  return { status: res.status, json };
-}
-
+      return { status: res.status, json };
+    }
 
     function renderDebug(status, json) {
-      debugStatusEl.textContent = `status ${status}`;
+      const ok = status >= 200 && status < 300;
+      debugStatusEl.textContent = `HTTP ${status}`;
+      debugStatusEl.classList.remove("ok", "err", "warn");
+      debugStatusEl.classList.add(ok ? "ok" : "err");
       debugOutputEl.textContent = JSON.stringify(json, null, 2);
     }
 
     function renderAnswer(json) {
-      answerOutputEl.classList.remove("placeholder");
-
-      if (!json) {
-        answerOutputEl.textContent = "No JSON returned from ask-tpar.";
+      if (json && typeof json.answer === "string") {
+        answerOutputEl.classList.remove("placeholder");
+        answerOutputEl.textContent = json.answer;
         return;
       }
-
-      if (json.ok && json.answer) {
-        answerOutputEl.textContent = json.answer;
-      } else if (json.error) {
-        answerOutputEl.textContent = `Error: ${json.error}`;
-      } else {
-        answerOutputEl.textContent = JSON.stringify(json, null, 2);
+      if (json && typeof json.response === "string") {
+        answerOutputEl.classList.remove("placeholder");
+        answerOutputEl.textContent = json.response;
+        return;
       }
+      answerOutputEl.classList.remove("placeholder");
+      answerOutputEl.textContent = JSON.stringify(json, null, 2);
     }
 
-    async function handleAsk() {
-      const question = questionEl.value.trim();
-      const context = contextEl.value.trim() || null;
+    function clearAll() {
+      questionEl.value = "";
+      contextEl.value = "";
+      answerOutputEl.classList.add("placeholder");
+      answerOutputEl.textContent = "Your answer will appear here.";
+      debugStatusEl.textContent = "no response yet";
+      debugStatusEl.classList.remove("ok", "err", "warn");
+      debugOutputEl.textContent = "{}";
+      setStatus("idle", "Idle");
+    }
 
+    askButton.addEventListener("click", async () => {
+      const question = (questionEl.value || "").trim();
+      const context = (contextEl.value || "").trim();
       if (!question) {
-        questionEl.focus();
+        setStatus("error", "Enter a question first");
+        answerOutputEl.classList.add("placeholder");
+        answerOutputEl.textContent = "Enter a question above, then click Ask.";
         return;
       }
 
@@ -747,7 +692,6 @@
 
       try {
         const { status, json } = await callAskTpar(question, context);
-
         renderDebug(status, json);
         renderAnswer(json);
 
@@ -756,43 +700,26 @@
         } else {
           setStatus("error", "Function error");
         }
-      } catch (err) {
-        renderDebug(0, { ok: false, error: String(err) });
+      } catch (e) {
+        renderDebug(0, { ok: false, error: e?.message || String(e) });
         answerOutputEl.classList.remove("placeholder");
-        answerOutputEl.textContent = "Network or client-side error. Check debug panel.";
-        setStatus("error", "Client error");
+        answerOutputEl.textContent = `Error: ${e?.message || String(e)}`;
+        setStatus("error", "Request failed");
       } finally {
         askButton.disabled = false;
         clearButton.disabled = false;
       }
-    }
-
-    askButton.addEventListener("click", handleAsk);
-
-    questionEl.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        handleAsk();
-      }
     });
 
-    clearButton.addEventListener("click", () => {
-      questionEl.value = "";
-      contextEl.value = "";
-      answerOutputEl.classList.add("placeholder");
-      answerOutputEl.textContent = "Your answer will appear here.";
-      debugOutputEl.textContent = "{}";
-      debugStatusEl.textContent = "no response yet";
-      setStatus("idle", "Idle");
-    // Require sign-in before use
-    refreshAuthUI();
-      questionEl.focus();
+    clearButton.addEventListener("click", () => clearAll());
+
+    // initial UI sync
+    refreshAuthUI().catch((e) => {
+      authStatusEl.textContent = `Init failed: ${e?.message || String(e)}`;
+      console.error(e);
     });
-
-    setStatus("idle", "Idle");
-
-    // Initial auth state
-    refreshAuthUI();
+    setStatus("idle", `Idle (${BUILD_ID})`);
   </script>
 </body>
 </html>
+
