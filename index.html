@@ -5,17 +5,16 @@
   <title>TPAR Dev Console</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 20px; line-height: 1.35; }
-    .row { display: flex; gap: 16px; flex-wrap: wrap; }
-    .card { border: 1px solid #ddd; border-radius: 12px; padding: 14px; min-width: 320px; flex: 1; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 18px; line-height: 1.35; }
+    .row { display:flex; gap:14px; flex-wrap: wrap; }
+    .card { border: 1px solid #ddd; border-radius: 14px; padding: 14px; min-width: 320px; flex: 1; box-shadow: 0 6px 16px rgba(0,0,0,.06); }
     label { display:block; font-size: 12px; color:#555; margin-top:10px; }
-    input, textarea, button { width: 100%; box-sizing: border-box; padding: 10px; margin-top: 6px; border-radius: 10px; border: 1px solid #ccc; }
+    input, textarea, button { width: 100%; box-sizing: border-box; padding: 10px; margin-top: 6px; border-radius: 12px; border: 1px solid #ccc; }
     textarea { min-height: 90px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
     button { cursor: pointer; border: 0; background: #111; color: #fff; }
     button.secondary { background: #666; }
-    button.danger { background: #b00020; }
     .muted { color: #666; font-size: 12px; }
-    pre { white-space: pre-wrap; word-break: break-word; background:#0b0b0b; color:#eaeaea; padding: 12px; border-radius: 12px; overflow:auto; }
+    pre { white-space: pre-wrap; word-break: break-word; background:#0b0b0b; color:#eaeaea; padding: 12px; border-radius: 14px; overflow:auto; }
     .pill { display:inline-block; padding: 4px 10px; border-radius: 999px; background:#f2f2f2; font-size:12px; }
     .ok { background:#e7f8ed; }
     .bad { background:#fde7ea; }
@@ -23,47 +22,61 @@
 </head>
 <body>
   <h2>TPAR Dev Console</h2>
-  <p class="muted">
-    This page signs in with Supabase Auth, automatically uses the current <span class="pill">access_token</span>,
-    and calls your Edge Functions with <span class="pill">Authorization: Bearer &lt;token&gt;</span>.
-  </p>
+  <div class="muted">
+    If buttons “do nothing”, your JS didn’t boot. This page will show that in <span class="pill">Boot</span>.
+  </div>
 
-  <div class="row">
+  <div style="margin-top:10px">
+    <span class="pill" id="bootPill">Boot: starting…</span>
+    <span class="pill" id="authPill">Auth: unknown</span>
+  </div>
+
+  <div class="row" style="margin-top:12px">
+    <div class="card">
+      <h3>Config (client-safe)</h3>
+
+      <label>Supabase URL</label>
+      <input id="sbUrl" value="https://bwpoqsfrygyopwxmegax.supabase.co"/>
+
+      <label>Supabase anon key</label>
+      <input id="sbAnon" placeholder="paste anon key here"/>
+
+      <label>Functions base URL</label>
+      <input id="fnBase" value="https://bwpoqsfrygyopwxmegax.functions.supabase.co"/>
+
+      <button id="btnInit" class="secondary" type="button">Initialize Supabase client</button>
+
+      <pre id="bootOut" style="margin-top:10px"></pre>
+    </div>
+
     <div class="card">
       <h3>Auth</h3>
-
-      <div id="authStatus" class="pill bad">Signed out</div>
 
       <label>Email</label>
       <input id="email" type="email" placeholder="you@company.com"/>
 
       <label>Password</label>
-      <input id="password" type="password" placeholder="Your password"/>
+      <input id="password" type="password" placeholder="your password"/>
 
       <div style="margin-top:10px" class="row">
-        <div style="flex:1">
-          <button id="btnSignIn">Sign in</button>
-        </div>
-        <div style="flex:1">
-          <button id="btnSignOut" class="secondary">Sign out</button>
-        </div>
+        <div style="flex:1"><button id="btnSignIn" type="button">Sign in</button></div>
+        <div style="flex:1"><button id="btnSignOut" class="secondary" type="button">Sign out</button></div>
       </div>
 
-      <label>Password reset (sets your password if you never had one)</label>
-      <button id="btnForgot" class="secondary">Send password reset email</button>
+      <label>Password reset email</label>
+      <button id="btnForgot" class="secondary" type="button">Send password reset email</button>
       <div class="muted" style="margin-top:6px">
-        After clicking the email link, you'll come back here. If Supabase sends you with a recovery token,
-        this page will show the "Set new password" box automatically.
+        This uses <code>resetPasswordForEmail()</code> and redirects back to this page.
       </div>
 
-      <div id="recoveryBox" style="display:none; margin-top: 12px">
-        <label>Set new password</label>
-        <input id="newPassword" type="password" placeholder="New password"/>
-        <button id="btnSetPassword">Set password</button>
+      <div id="recoveryBox" style="display:none; margin-top:12px">
+        <label>Set new password (after clicking email link)</label>
+        <input id="newPassword" type="password" placeholder="new password (min 6 chars)"/>
+        <button id="btnSetPassword" type="button">Set password</button>
       </div>
 
       <div style="margin-top:10px">
-        <button id="btnShowToken" class="secondary">Show current access token</button>
+        <button id="btnShowToken" class="secondary" type="button">Show current access token</button>
         <pre id="tokenOut" style="display:none; margin-top:10px"></pre>
       </div>
 
@@ -71,159 +84,127 @@
     </div>
 
     <div class="card">
-      <h3>Ask TPAR</h3>
-
-      <label>Functions base URL</label>
-      <input id="functionsBase" value="https://bwpoqsfrygyopwxmegax.functions.supabase.co"/>
-
+      <h3>ask-tpar</h3>
       <label>Question</label>
       <input id="question" placeholder='e.g. "list techs"'/>
 
-      <label>Context (optional JSON)</label>
-      <textarea id="context" placeholder='{"date":"2026-01-10"}'></textarea>
+      <label>Context JSON (optional)</label>
+      <textarea id="context" placeholder='{"anything":"you want"}'></textarea>
 
-      <label>Debug (admin only)</label>
-      <input id="debug" placeholder="true or false (default false)"/>
-
-      <button id="btnAsk">POST /ask-tpar</button>
-
+      <button id="btnAsk" type="button">POST /ask-tpar</button>
       <pre id="askOut" style="margin-top:10px"></pre>
     </div>
 
     <div class="card">
-      <h3>Dev Snapshot</h3>
+      <h3>tpar-dev-snapshot</h3>
+      <label>include_docs (admin only)</label>
+      <input id="includeDocs" placeholder="true or false"/>
 
-      <label>Include docs (admin only)</label>
-      <input id="includeDocs" placeholder="true or false (default false)"/>
-
-      <button id="btnSnapshot">GET /tpar-dev-snapshot</button>
-
+      <button id="btnSnap" type="button">GET /tpar-dev-snapshot</button>
       <pre id="snapOut" style="margin-top:10px"></pre>
     </div>
   </div>
 
-  <!-- Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // --------- CONFIG (safe to be public) ----------
-    // Use your project URL + anon key (anon key is meant to be public client-side).
-    const SUPABASE_URL = "https://bwpoqsfrygyopwxmegax.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3cG9xc2ZyeWd5b3B3eG1lZ2F4Iiwicm9sZSI6ImFub24iLCJpYXQiOj";
-    // ----------------------------------------------
-
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Show any boot-time JS errors inside the page (no DevTools required).
+    window.addEventListener("error", (e) => {
+      const out = document.getElementById("bootOut");
+      if (out) out.textContent = "JS Error: " + (e?.message || String(e));
+      const pill = document.getElementById("bootPill");
+      if (pill) { pill.textContent = "Boot: failed"; pill.className = "pill bad"; }
+    });
 
     const $ = (id) => document.getElementById(id);
+    const setPill = (id, ok, text) => {
+      const el = $(id);
+      if (!el) return;
+      el.textContent = text;
+      el.className = "pill " + (ok ? "ok" : "bad");
+    };
+    const safeSet = (el, text) => { if (el) el.textContent = text || ""; };
 
-    function show(el, on) { el.style.display = on ? "" : "none"; }
+    // Dynamic loader with fallback, because sometimes jsdelivr gets blocked.
+    function loadSupabaseUmd() {
+      return new Promise((resolve, reject) => {
+        function load(src) {
+          return new Promise((res, rej) => {
+            const s = document.createElement("script");
+            s.src = src;
+            s.async = true;
+            s.onload = () => res(true);
+            s.onerror = () => rej(new Error("Failed to load: " + src));
+            document.head.appendChild(s);
+          });
+        }
 
-    function setAuthStatus(session) {
-      const pill = $("authStatus");
-      if (session?.user?.email) {
-        pill.textContent = "Signed in: " + session.user.email;
-        pill.className = "pill ok";
-      } else {
-        pill.textContent = "Signed out";
-        pill.className = "pill bad";
+        load("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2")
+          .catch(() => load("https://unpkg.com/@supabase/supabase-js@2"))
+          .then(() => {
+            if (!window.supabase || !window.supabase.createClient) {
+              throw new Error("Supabase UMD loaded but window.supabase.createClient not found");
+            }
+            resolve(true);
+          })
+          .catch(reject);
+      });
+    }
+
+    let sb = null;
+
+    async function initClient() {
+      const out = $("bootOut");
+      try {
+        safeSet(out, "Loading supabase-js…");
+        await loadSupabaseUmd();
+
+        const url = $("sbUrl").value.trim();
+        const anon = $("sbAnon").value.trim();
+        if (!url || !anon) throw new Error("Paste Supabase URL + anon key, then click Initialize.");
+
+        sb = window.supabase.createClient(url, anon);
+
+        setPill("bootPill", true, "Boot: ok");
+        safeSet(out, "Supabase client initialized.");
+
+        sb.auth.onAuthStateChange((event, session) => {
+          if (event === "PASSWORD_RECOVERY") $("recoveryBox").style.display = "";
+          if (event === "SIGNED_IN") $("recoveryBox").style.display = "none";
+          renderAuth(session).catch(() => {});
+        });
+
+        const { data } = await sb.auth.getSession();
+        await renderAuth(data?.session || null);
+      } catch (e) {
+        setPill("bootPill", false, "Boot: failed");
+        safeSet(out, "Boot failed: " + (e?.message || String(e)));
       }
     }
 
-    async function currentSession() {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) throw error;
-      return data.session;
+    async function renderAuth(session) {
+      const out = $("authOut");
+      if (!sb) {
+        setPill("authPill", false, "Auth: no client");
+        safeSet(out, "Initialize Supabase client first.");
+        return;
+      }
+
+      const signedIn = !!session?.user?.email;
+      setPill("authPill", signedIn, signedIn ? ("Auth: " + session.user.email) : "Auth: signed out");
+      safeSet(out, JSON.stringify({
+        signed_in: signedIn,
+        user_email: session?.user?.email ?? null,
+        expires_at: session?.expires_at ?? null
+      }, null, 2));
     }
 
-    async function requireAccessToken() {
-      const session = await currentSession();
-      const token = session?.access_token;
+    async function requireToken() {
+      if (!sb) throw new Error("Initialize Supabase client first.");
+      const { data, error } = await sb.auth.getSession();
+      if (error) throw error;
+      const token = data?.session?.access_token;
       if (!token) throw new Error("Not signed in (no access_token).");
       return token;
     }
-
-    async function renderSession() {
-      const session = await currentSession();
-      setAuthStatus(session);
-      $("authOut").textContent = JSON.stringify({
-        has_session: !!session,
-        user_email: session?.user?.email ?? null,
-        expires_at: session?.expires_at ?? null,
-      }, null, 2);
-    }
-
-    // If a recovery / oauth link drops tokens into the URL, supabase-js will often pick it up
-    // and fire an auth event. We'll listen and show the recovery UI when needed.
-    supabase.auth.onAuthStateChange((event, session) => {
-      // PASSWORD_RECOVERY is common for reset links.
-      if (event === "PASSWORD_RECOVERY") show($("recoveryBox"), true);
-      // Some projects may emit SIGNED_IN after recovery exchange.
-      if (event === "SIGNED_IN") show($("recoveryBox"), false);
-      renderSession().catch(() => {});
-    });
-
-    // Initial render
-    renderSession().catch(err => { $("authOut").textContent = String(err); });
-
-    $("btnSignIn").onclick = async () => {
-      try {
-        const email = $("email").value.trim();
-        const password = $("password").value;
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        show($("recoveryBox"), false);
-        await renderSession();
-      } catch (e) {
-        $("authOut").textContent = "Sign-in failed: " + (e?.message ?? String(e));
-      }
-    };
-
-    $("btnSignOut").onclick = async () => {
-      try {
-        await supabase.auth.signOut();
-        show($("recoveryBox"), false);
-        await renderSession();
-      } catch (e) {
-        $("authOut").textContent = "Sign-out failed: " + (e?.message ?? String(e));
-      }
-    };
-
-    $("btnForgot").onclick = async () => {
-      try {
-        const email = $("email").value.trim();
-        if (!email) throw new Error("Enter your email first.");
-        const redirectTo = window.location.origin + window.location.pathname;
-        const { data, error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
-        if (error) throw error;
-        $("authOut").textContent = "Password reset email sent. Check inbox/spam. Then click the link.";
-      } catch (e) {
-        $("authOut").textContent = "Reset failed: " + (e?.message ?? String(e));
-      }
-    };
-
-    $("btnSetPassword").onclick = async () => {
-      try {
-        const newPassword = $("newPassword").value;
-        if (!newPassword || newPassword.length < 6) throw new Error("Password must be at least 6 characters.");
-        const { data, error } = await supabase.auth.updateUser({ password: newPassword });
-        if (error) throw error;
-        show($("recoveryBox"), false);
-        $("authOut").textContent = "Password updated. Now you can sign in normally.";
-        await renderSession();
-      } catch (e) {
-        $("authOut").textContent = "Set password failed: " + (e?.message ?? String(e));
-      }
-    };
-
-    $("btnShowToken").onclick = async () => {
-      try {
-        const token = await requireAccessToken();
-        $("tokenOut").textContent = token;
-        show($("tokenOut"), true);
-      } catch (e) {
-        $("tokenOut").textContent = "No token: " + (e?.message ?? String(e));
-        show($("tokenOut"), true);
-      }
-    };
 
     async function fetchJson(url, opts) {
       const res = await fetch(url, opts);
@@ -233,62 +214,118 @@
       return { status: res.status, json, raw: text };
     }
 
+    $("btnInit").onclick = initClient;
+
+    $("btnSignIn").onclick = async () => {
+      try {
+        if (!sb) throw new Error("Initialize Supabase client first.");
+        const email = $("email").value.trim();
+        const password = $("password").value;
+        if (!email || !password) throw new Error("Enter email + password.");
+        const { data, error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        const { data: sess } = await sb.auth.getSession();
+        await renderAuth(sess?.session || null);
+      } catch (e) {
+        safeSet($("authOut"), "Sign-in failed: " + (e?.message || String(e)));
+      }
+    };
+
+    $("btnSignOut").onclick = async () => {
+      try {
+        if (!sb) throw new Error("Initialize Supabase client first.");
+        const { error } = await sb.auth.signOut();
+        if (error) throw error;
+        const { data } = await sb.auth.getSession();
+        await renderAuth(data?.session || null);
+      } catch (e) {
+        safeSet($("authOut"), "Sign-out failed: " + (e?.message || String(e)));
+      }
+    };
+
+    $("btnForgot").onclick = async () => {
+      try {
+        if (!sb) throw new Error("Initialize Supabase client first.");
+        const email = $("email").value.trim();
+        if (!email) throw new Error("Enter your email first.");
+        const redirectTo = window.location.origin + window.location.pathname;
+        const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+        if (error) throw error;
+        safeSet($("authOut"), "Password reset email sent. Check inbox/spam. Click link to return here.");
+      } catch (e) {
+        safeSet($("authOut"), "Reset failed: " + (e?.message || String(e)));
+      }
+    };
+
+    $("btnSetPassword").onclick = async () => {
+      try {
+        if (!sb) throw new Error("Initialize Supabase client first.");
+        const pw = $("newPassword").value;
+        if (!pw || pw.length < 6) throw new Error("Password must be at least 6 characters.");
+        const { error } = await sb.auth.updateUser({ password: pw });
+        if (error) throw error;
+        $("recoveryBox").style.display = "none";
+        safeSet($("authOut"), "Password updated. You can sign in normally now.");
+      } catch (e) {
+        safeSet($("authOut"), "Set password failed: " + (e?.message || String(e)));
+      }
+    };
+
+    $("btnShowToken").onclick = async () => {
+      try {
+        const token = await requireToken();
+        $("tokenOut").style.display = "";
+        $("tokenOut").textContent = token;
+      } catch (e) {
+        $("tokenOut").style.display = "";
+        $("tokenOut").textContent = "No token: " + (e?.message || String(e));
+      }
+    };
+
     $("btnAsk").onclick = async () => {
       try {
-        const base = $("functionsBase").value.trim().replace(/\/+$/, "");
+        const base = $("fnBase").value.trim().replace(/\/+$/, "");
         const url = base + "/ask-tpar";
         const question = $("question").value.trim();
         if (!question) throw new Error("Enter a question.");
-        const debugRaw = $("debug").value.trim().toLowerCase();
-        const debug = debugRaw === "true" || debugRaw === "1" || debugRaw === "yes";
-
         let context = null;
-        const ctxTxt = $("context").value.trim();
-        if (ctxTxt) {
-          try { context = JSON.parse(ctxTxt); }
-          catch { throw new Error("Context must be valid JSON (or empty)."); }
-        }
+        const ctx = $("context").value.trim();
+        if (ctx) context = JSON.parse(ctx);
 
-        const token = await requireAccessToken();
-        const payload = { question, context, debug };
-
+        const token = await requireToken();
+        const anon = $("sbAnon").value.trim();
         const result = await fetchJson(url, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
+          headers: { "Content-Type": "application/json", "apikey": anon, "Authorization": "Bearer " + token },
+          body: JSON.stringify({ question, context })
         });
-
         $("askOut").textContent = JSON.stringify(result, null, 2);
       } catch (e) {
-        $("askOut").textContent = "Ask failed: " + (e?.message ?? String(e));
+        $("askOut").textContent = "Ask failed: " + (e?.message || String(e));
       }
     };
 
-    $("btnSnapshot").onclick = async () => {
+    $("btnSnap").onclick = async () => {
       try {
-        const base = $("functionsBase").value.trim().replace(/\/+$/, "");
-        const includeDocsRaw = $("includeDocs").value.trim().toLowerCase();
-        const includeDocs = includeDocsRaw === "true" || includeDocsRaw === "1" || includeDocsRaw === "yes";
+        const base = $("fnBase").value.trim().replace(/\/+$/, "");
+        const includeDocs = ($("includeDocs").value.trim().toLowerCase() === "true");
         const url = base + "/tpar-dev-snapshot" + (includeDocs ? "?include_docs=true" : "");
-
-        const token = await requireAccessToken();
+        const token = await requireToken();
+        const anon = $("sbAnon").value.trim();
         const result = await fetchJson(url, {
           method: "GET",
-          headers: {
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": `Bearer ${token}`,
-          },
+          headers: { "apikey": anon, "Authorization": "Bearer " + token }
         });
-
         $("snapOut").textContent = JSON.stringify(result, null, 2);
       } catch (e) {
-        $("snapOut").textContent = "Snapshot failed: " + (e?.message ?? String(e));
+        $("snapOut").textContent = "Snapshot failed: " + (e?.message || String(e)));
       }
     };
+
+    // Start in a safe state: user must click Initialize so there's no silent failure.
+    setPill("bootPill", false, "Boot: not initialized");
+    setPill("authPill", false, "Auth: not initialized");
+    $("bootOut").textContent = "Paste anon key, then click Initialize. If you see Boot: failed, the reason will be printed here.";
   </script>
 </body>
 </html>
