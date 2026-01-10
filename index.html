@@ -2,846 +2,293 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Ask-TPAR</title>
+  <title>TPAR Dev Console</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root {
-      --cream: #f8f1e7;
-      --brown: #5a3b2e;
-      --blue: #0d6efd;
-      --orange: #ff8a3d;
-      --border-soft: #d5c4af;
-      --text-main: #2a241f;
-      --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.08);
-      --radius-xl: 18px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--cream);
-      color: var(--text-main);
-    }
-
-    .app-shell {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Header */
-    header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 14px 22px;
-      background: linear-gradient(90deg, #3b4b6a, #1b2738);
-      color: #fff;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      z-index: 10;
-    }
-
-    header .logo-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    header img.logo {
-      height: 40px;
-      width: auto;
-      object-fit: contain;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 4px 6px;
-    }
-
-    header .title-block {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    header .title {
-      font-style: italic;
-      font-size: 1.4rem;
-      font-weight: 500;
-      letter-spacing: 0.04em;
-    }
-
-    header .subtitle {
-      font-size: 0.8rem;
-      opacity: 0.8;
-    }
-
-    /* Main layout */
-    main {
-      flex: 1;
-      padding: 18px 22px 28px;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.2fr);
-      gap: 18px;
-    }
-
-    @media (max-width: 900px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.92);
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--border-soft);
-      box-shadow: var(--shadow-soft);
-      padding: 16px 16px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 2px;
-    }
-
-    .card-title {
-      font-size: 0.95rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: var(--brown);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .pill {
-      font-size: 0.7rem;
-      padding: 2px 7px;
-      border-radius: 999px;
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      background: #fff6ec;
-      color: #a04f00;
-    }
-
-    .card-subtitle {
-      font-size: 0.78rem;
-      opacity: 0.75;
-    }
-
-    /* Plumbing theme line */
-    .plumbing-strip {
-      position: relative;
-      height: 10px;
-      border-radius: 999px;
-      overflow: hidden;
-      background: #ddd5c8;
-      margin-bottom: 8px;
-    }
-
-    .plumbing-strip::before,
-    .plumbing-strip::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        90deg,
-        rgba(13, 110, 253, 0.95),
-        rgba(13, 110, 253, 0.95) 12px,
-        rgba(255, 138, 61, 0.95) 12px,
-        rgba(255, 138, 61, 0.95) 24px
-      );
-      opacity: 0.22;
-    }
-
-    /* Form area */
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    label {
-      font-size: 0.85rem;
-      font-weight: 500;
-    }
-
-    textarea,
-    input[type="text"],
-    input[type="password"] {
-      width: 100%;
-      padding: 10px 11px;
-      border-radius: 10px;
-      border: 1px solid #ccbca7;
-      resize: vertical;
-      font: inherit;
-      background: #fdf8f1;
-    }
-
-    textarea:focus,
-    input[type="text"]:focus {
-      outline: none;
-      border-color: var(--orange);
-      box-shadow: 0 0 0 1px rgba(255, 138, 61, 0.4);
-      background: #fffaf2;
-    }
-
-    textarea {
-      min-height: 80px;
-    }
-
-    .row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .row > * {
-      flex: 1;
-      min-width: 180px;
-    }
-
-    .actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      margin-top: 4px;
-    }
-
-    .button-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    button {
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-size: 0.9rem;
-      padding: 8px 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: 500;
-      transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.12s ease;
-    }
-
-    button.primary {
-      background: linear-gradient(135deg, var(--blue), #184a9b);
-      color: #fff;
-      box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
-    }
-
-    button.primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 14px rgba(13, 110, 253, 0.35);
-    }
-
-    button.secondary {
-      background: #fff;
-      border: 1px solid #cfbca5;
-      color: #5a4632;
-    }
-
-    button.secondary:hover {
-      background: #fff7eb;
-    }
-
-    button:disabled {
-      opacity: 0.6;
-      cursor: default;
-      transform: none;
-      box-shadow: none;
-    }
-
-    .status-pill {
-      font-size: 0.8rem;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: #f4ece1;
-      border: 1px solid #ddccb6;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: #94c973;
-    }
-
-    .dot.error {
-      background: #e55353;
-    }
-
-    /* Output */
-    .output {
-      flex: 1;
-      min-height: 120px;
-      padding: 10px 11px;
-      border-radius: 10px;
-      border: 1px dashed #c6b8a4;
-      background: #fffdf8;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-        "Courier New", monospace;
-      font-size: 0.86rem;
-      white-space: pre-wrap;
-      overflow-y: auto;
-      max-height: 360px;
-    }
-
-    .output.placeholder {
-      color: #9c8b76;
-    }
-
-    /* Debug panel */
-    .debug-note {
-      font-size: 0.8rem;
-      opacity: 0.75;
-    }
-
-    .debug-output {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-        "Courier New", monospace;
-      font-size: 0.8rem;
-      background: #111827;
-      color: #e5e7eb;
-      border-radius: 12px;
-      padding: 10px 11px;
-      max-height: 380px;
-      overflow: auto;
-      border: 1px solid #4b5563;
-      position: relative;
-    }
-
-    .debug-output .badge {
-      position: absolute;
-      top: 7px;
-      right: 9px;
-      font-size: 0.7rem;
-      padding: 2px 7px;
-      border-radius: 999px;
-      background: rgba(31, 41, 55, 0.9);
-      border: 1px solid rgba(156, 163, 175, 0.8);
-      color: #9ca3af;
-    }
-
-    .debug-output pre {
-      margin: 0;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .footer-note {
-      margin-top: 8px;
-      font-size: 0.72rem;
-      opacity: 0.7;
-      text-align: right;
-    }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 20px; line-height: 1.35; }
+    .row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 14px; min-width: 320px; flex: 1; }
+    label { display:block; font-size: 12px; color:#555; margin-top:10px; }
+    input, textarea, button { width: 100%; box-sizing: border-box; padding: 10px; margin-top: 6px; border-radius: 10px; border: 1px solid #ccc; }
+    textarea { min-height: 90px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    button { cursor: pointer; border: 0; background: #111; color: #fff; }
+    button.secondary { background: #666; }
+    button.danger { background: #b00020; }
+    .muted { color: #666; font-size: 12px; }
+    pre { white-space: pre-wrap; word-break: break-word; background:#0b0b0b; color:#eaeaea; padding: 12px; border-radius: 12px; overflow:auto; }
+    .pill { display:inline-block; padding: 4px 10px; border-radius: 999px; background:#f2f2f2; font-size:12px; }
+    .ok { background:#e7f8ed; }
+    .bad { background:#fde7ea; }
   </style>
 </head>
 <body>
-  <div class="app-shell">
-    <header>
-      <div class="logo-wrap">
-        <!-- If logo.png isn't present, it just hides -->
-        <img src="logo.png" alt="Company Logo" class="logo" onerror="this.style.display='none'" />
-        <div class="title-block">
-          <div class="title">Ask-TPAR</div>
-          <div class="subtitle">Tulsa Plumbing &amp; Remodeling • Stack-aware job assistant</div>
+  <h2>TPAR Dev Console</h2>
+  <p class="muted">
+    This page signs in with Supabase Auth, automatically uses the current <span class="pill">access_token</span>,
+    and calls your Edge Functions with <span class="pill">Authorization: Bearer &lt;token&gt;</span>.
+  </p>
+
+  <div class="row">
+    <div class="card">
+      <h3>Auth</h3>
+
+      <div id="authStatus" class="pill bad">Signed out</div>
+
+      <label>Email</label>
+      <input id="email" type="email" placeholder="you@company.com"/>
+
+      <label>Password</label>
+      <input id="password" type="password" placeholder="Your password"/>
+
+      <div style="margin-top:10px" class="row">
+        <div style="flex:1">
+          <button id="btnSignIn">Sign in</button>
+        </div>
+        <div style="flex:1">
+          <button id="btnSignOut" class="secondary">Sign out</button>
         </div>
       </div>
-    </header>
 
-    <main>
-      <div class="layout">
-        <!-- Left column: Question / Answer -->
-        <section class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">
-                <span>QUESTION &amp; ANSWER</span>
-                <span class="pill">Live Stack</span>
-              </div>
-              <div class="card-subtitle">
-                Ask about jobs, calls, techs, or schedules. The right side shows the raw response from
-                Supabase.
-              </div>
-            </div>
-            <div id="connectionStatus" class="status-pill">
-              <span class="dot" id="statusDot"></span>
-              <span id="statusText">Idle</span>
-            </div>
-          </div>
-
-          <div class="plumbing-strip" aria-hidden="true"></div>
-
-          <div class="input-group">
-            <label for="question">Question</label>
-            <textarea
-              id="question"
-              placeholder="e.g. What jobs did Jake work in the last 30 days?"
-            ></textarea>
-
-            <div class="row">
-              <div>
-                <label for="context">Context (optional)</label>
-                <input
-                  type="text"
-                  id="context"
-                  placeholder="e.g. 'appointments_master' or leave blank"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div class="actions">
-            <div class="button-row">
-              <button id="askButton" class="primary">
-                <span>Ask TPAR</span>
-              </button>
-              <button id="clearButton" class="secondary" type="button">
-                <span>Clear</span>
-              </button>
-            </div>
-            <div style="font-size: 0.75rem; opacity: 0.75">
-              Uses Supabase Edge Function:
-              <span style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas">
-                ask-tpar
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <label style="margin-top: 10px; display: block">Answer</label>
-            <div id="answerOutput" class="output placeholder">
-              Your answer will appear here.
-            </div>
-          </div>
-        </section>
-
-        <!-- Right column: Debug / Raw JSON -->
-        <section class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">
-                <span>DEBUG</span>
-                <span class="pill">Raw ask-tpar response</span>
-              </div>
-              <div class="card-subtitle">
-                If something blows up, this is where the truth lives. Paste this into ChatGPT when
-                we’re debugging.
-              </div>
-            </div>
-          </div>
-
-          <div class="plumbing-strip" aria-hidden="true"></div>
-
-          <div class="input-group" style="margin-top: 2px">
-            <label>Sign in (required)</label>
-            <div class="row">
-              <div>
-                <input id="authEmail" type="text" placeholder="email (e.g. you@tulsapar.com)" />
-              </div>
-              <div>
-                <input id="authPassword" type="password" placeholder="password" />
-              </div>
-            </div>
-
-            <div class="button-row">
-              <button id="loginButton" class="secondary" type="button">
-                <span>Sign In</span>
-              </button>
-              <button id="signupButton" class="secondary" type="button">
-                <span>Sign Up</span>
-              </button>
-              <button id="forgotButton" class="secondary" type="button">
-                <span>Forgot Password</span>
-              </button>
-              <button id="logoutButton" class="secondary" type="button" disabled>
-                <span>Sign Out</span>
-              </button>
-            </div>
-
-            <div class="debug-note" id="authStatus">Not signed in</div>
-          </div>
-
-          <div class="debug-note">
-            Debug – raw JSON (or whatever the function actually sent) from ask-tpar will appear
-            here.
-          </div>
-
-          <div class="debug-output">
-            <div class="badge" id="debugStatus">no response yet</div>
-            <pre id="debugOutput">{}</pre>
-          </div>
-
-          <div class="footer-note">
-            Tip: if you see <code>Invalid JSON from ask-tpar</code>, the <code>raw</code> field
-            here will show the actual body the function returned.
-          </div>
-        </section>
+      <label>Password reset (sets your password if you never had one)</label>
+      <button id="btnForgot" class="secondary">Send password reset email</button>
+      <div class="muted" style="margin-top:6px">
+        After clicking the email link, you'll come back here. If Supabase sends you with a recovery token,
+        this page will show the "Set new password" box automatically.
       </div>
-    </main>
+
+      <div id="recoveryBox" style="display:none; margin-top: 12px">
+        <label>Set new password</label>
+        <input id="newPassword" type="password" placeholder="New password"/>
+        <button id="btnSetPassword">Set password</button>
+      </div>
+
+      <div style="margin-top:10px">
+        <button id="btnShowToken" class="secondary">Show current access token</button>
+        <pre id="tokenOut" style="display:none; margin-top:10px"></pre>
+      </div>
+
+      <pre id="authOut" style="margin-top:10px"></pre>
+    </div>
+
+    <div class="card">
+      <h3>Ask TPAR</h3>
+
+      <label>Functions base URL</label>
+      <input id="functionsBase" value="https://bwpoqsfrygyopwxmegax.functions.supabase.co"/>
+
+      <label>Question</label>
+      <input id="question" placeholder='e.g. "list techs"'/>
+
+      <label>Context (optional JSON)</label>
+      <textarea id="context" placeholder='{"date":"2026-01-10"}'></textarea>
+
+      <label>Debug (admin only)</label>
+      <input id="debug" placeholder="true or false (default false)"/>
+
+      <button id="btnAsk">POST /ask-tpar</button>
+
+      <pre id="askOut" style="margin-top:10px"></pre>
+    </div>
+
+    <div class="card">
+      <h3>Dev Snapshot</h3>
+
+      <label>Include docs (admin only)</label>
+      <input id="includeDocs" placeholder="true or false (default false)"/>
+
+      <button id="btnSnapshot">GET /tpar-dev-snapshot</button>
+
+      <pre id="snapOut" style="margin-top:10px"></pre>
+    </div>
   </div>
 
-  
-  <!-- Supabase JS (UMD) avoids ESM import failures that can make buttons “do nothing”. -->
+  <!-- Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <script>
-  (function () {
-    // ===== CONFIG (edit these before deploy) =====
-    const BUILD_ID = "tpar-v.0.97_25-1-10_12-37_NBK-1";
+    // --------- CONFIG (safe to be public) ----------
+    // Use your project URL + anon key (anon key is meant to be public client-side).
     const SUPABASE_URL = "https://bwpoqsfrygyopwxmegax.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3cG9xc2ZyeWd5b3B3eG1lZ2F4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzkyNTcsImV4cCI6MjA4MjM5OTI1N30.HMwTK2obYHnv96hOcB6XMSkPXJicWL4nhUS2c7wUb2Q";
-    const ASK_TPAR_ENDPOINT = `${SUPABASE_URL}/functions/v1/ask-tpar`;
-    // ============================================
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3cG9xc2ZyeWd5b3B3eG1lZ2F4Iiwicm9sZSI6ImFub24iLCJpYXQiOj";
+    // ----------------------------------------------
 
-    // Create the Supabase client
-    const { createClient } = window.supabase;
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Elements
-    const questionEl = document.getElementById("question");
-    const contextEl = document.getElementById("context");
-    const askButton = document.getElementById("askButton");
-    const clearButton = document.getElementById("clearButton");
-    const answerOutputEl = document.getElementById("answerOutput");
-    const debugOutputEl = document.getElementById("debugOutput");
-    const debugStatusEl = document.getElementById("debugStatus");
-    const statusDotEl = document.getElementById("statusDot");
-    const statusTextEl = document.getElementById("statusText");
+    const $ = (id) => document.getElementById(id);
 
-    const authEmailEl = document.getElementById("authEmail");
-    const authPasswordEl = document.getElementById("authPassword");
-    const loginButton = document.getElementById("loginButton");
-    const signupButton = document.getElementById("signupButton");
-    const forgotButton = document.getElementById("forgotButton");
-    const logoutButton = document.getElementById("logoutButton");
-    const authStatusEl = document.getElementById("authStatus");
+    function show(el, on) { el.style.display = on ? "" : "none"; }
 
-    function safeSet(el, txt) { if (el) el.textContent = txt; }
-
-    // ===== "Is JS running?" beacon =====
-    safeSet(authStatusEl, `JS loaded • ${BUILD_ID}`);
-    console.log("Ask-TPAR frontend loaded", { BUILD_ID, SUPABASE_URL, ASK_TPAR_ENDPOINT });
-
-    window.addEventListener("error", (e) => {
-      const msg = e && e.message ? e.message : "Unknown JS error";
-      safeSet(authStatusEl, `JS ERROR: ${msg}`);
-      console.error("JS ERROR:", e);
-    });
-
-    window.addEventListener("unhandledrejection", (e) => {
-      const msg = (e && e.reason && e.reason.message) ? e.reason.message : String(e && e.reason ? e.reason : e);
-      safeSet(authStatusEl, `PROMISE ERROR: ${msg}`);
-      console.error("PROMISE ERROR:", e);
-    });
-
-    // Expose helpers for DevTools:
-    //   await window.__tpar.showToken()
-    //   await window.__tpar.session()
-    window.__tpar = {
-      BUILD_ID,
-      SUPABASE_URL,
-      ASK_TPAR_ENDPOINT,
-      supabase,
-      session: async () => (await supabase.auth.getSession()).data.session,
-      showToken: async () => {
-        const { data } = await supabase.auth.getSession();
-        return data.session ? data.session.access_token : null;
-      },
-    };
-    // ==================================
-
-    function setStatus(state, message) {
-      if (!statusDotEl || !statusTextEl) return;
-
-      if (state === "loading") {
-        statusDotEl.classList.remove("error");
-        statusDotEl.style.background = "#fbbf24";
-        statusTextEl.textContent = message || "Working…";
-      } else if (state === "ok") {
-        statusDotEl.classList.remove("error");
-        statusDotEl.style.background = "#94c973";
-        statusTextEl.textContent = message || "OK";
-      } else if (state === "error") {
-        statusDotEl.classList.add("error");
-        statusDotEl.style.background = "#e55353";
-        statusTextEl.textContent = message || "Error";
+    function setAuthStatus(session) {
+      const pill = $("authStatus");
+      if (session?.user?.email) {
+        pill.textContent = "Signed in: " + session.user.email;
+        pill.className = "pill ok";
       } else {
-        statusDotEl.classList.remove("error");
-        statusDotEl.style.background = "#9ca3af";
-        statusTextEl.textContent = message || "Idle";
+        pill.textContent = "Signed out";
+        pill.className = "pill bad";
       }
     }
 
-    function setAuthUI(session) {
-      const signedIn = Boolean(session && session.user);
-
-      if (signedIn) {
-        const email = session.user.email || "signed in";
-        safeSet(authStatusEl, `Signed in as ${email} • ${BUILD_ID}`);
-        if (loginButton) loginButton.disabled = true;
-        if (logoutButton) logoutButton.disabled = false;
-        if (askButton) askButton.disabled = false;
-      } else {
-        safeSet(authStatusEl, `Not signed in • ${BUILD_ID}`);
-        if (loginButton) loginButton.disabled = false;
-        if (logoutButton) logoutButton.disabled = true;
-        if (askButton) askButton.disabled = true;
-      }
-    }
-
-    async function refreshAuthUI() {
+    async function currentSession() {
       const { data, error } = await supabase.auth.getSession();
       if (error) throw error;
-      setAuthUI(data.session);
       return data.session;
     }
 
     async function requireAccessToken() {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) throw error;
-      const token = data.session && data.session.access_token ? data.session.access_token : null;
-      if (!token) throw new Error("Not signed in. Click Sign In first.");
+      const session = await currentSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not signed in (no access_token).");
       return token;
     }
 
-    async function callAskTpar(question, context) {
-      const payload = { question, context };
-      const res = await fetch(ASK_TPAR_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${await requireAccessToken()}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const text = await res.text();
-      let json;
-      try {
-        json = JSON.parse(text);
-      } catch (_) {
-        json = { ok: false, error: "Invalid JSON from ask-tpar", raw: text, status: res.status };
-      }
-      return { status: res.status, json };
+    async function renderSession() {
+      const session = await currentSession();
+      setAuthStatus(session);
+      $("authOut").textContent = JSON.stringify({
+        has_session: !!session,
+        user_email: session?.user?.email ?? null,
+        expires_at: session?.expires_at ?? null,
+      }, null, 2);
     }
 
-    function renderDebug(status, json) {
-      safeSet(debugStatusEl, `HTTP ${status}`);
-      safeSet(debugOutputEl, JSON.stringify(json, null, 2));
-    }
-
-    function renderAnswer(json) {
-      if (!answerOutputEl) return;
-      answerOutputEl.classList.remove("placeholder");
-
-      if (!json) {
-        answerOutputEl.textContent = "No JSON returned from ask-tpar.";
-        return;
-      }
-      if (typeof json.answer === "string") {
-        answerOutputEl.textContent = json.answer;
-        return;
-      }
-      if (typeof json.response === "string") {
-        answerOutputEl.textContent = json.response;
-        return;
-      }
-      if (json.error) {
-        answerOutputEl.textContent = `Error: ${json.error}`;
-        return;
-      }
-      answerOutputEl.textContent = JSON.stringify(json, null, 2);
-    }
-
-    async function handleAsk() {
-      const question = (questionEl && questionEl.value ? questionEl.value : "").trim();
-      const context = (contextEl && contextEl.value ? contextEl.value : "").trim() || null;
-
-      if (!question) {
-        if (questionEl) questionEl.focus();
-        return;
-      }
-
-      if (askButton) askButton.disabled = true;
-      if (clearButton) clearButton.disabled = true;
-      setStatus("loading", "Querying ask-tpar…");
-      if (answerOutputEl) {
-        answerOutputEl.classList.add("placeholder");
-        answerOutputEl.textContent = "Thinking through the live stack…";
-      }
-
-      try {
-        const { status, json } = await callAskTpar(question, context);
-        renderDebug(status, json);
-        renderAnswer(json);
-
-        if (status >= 200 && status < 300 && json && json.ok) {
-          setStatus("ok", "Response OK");
-        } else {
-          setStatus("error", "Function error");
-        }
-      } catch (err) {
-        renderDebug(0, { ok: false, error: (err && err.message) ? err.message : String(err) });
-        if (answerOutputEl) {
-          answerOutputEl.classList.remove("placeholder");
-          answerOutputEl.textContent = "Client-side error. Check DevTools console.";
-        }
-        setStatus("error", "Client error");
-      } finally {
-        if (askButton) askButton.disabled = false;
-        if (clearButton) clearButton.disabled = false;
-      }
-    }
-
-    // ===== Button hooks (with visible feedback) =====
-    if (loginButton) {
-      loginButton.addEventListener("click", async () => {
-        try {
-          console.log("Sign In clicked");
-          const email = (authEmailEl && authEmailEl.value ? authEmailEl.value : "").trim();
-          const password = authPasswordEl && authPasswordEl.value ? authPasswordEl.value : "";
-
-          if (!email || !password) {
-            safeSet(authStatusEl, "Enter email + password.");
-            return;
-          }
-
-          loginButton.disabled = true;
-          safeSet(authStatusEl, `Signing in… • ${BUILD_ID}`);
-
-          const { error } = await supabase.auth.signInWithPassword({ email, password });
-          if (error) throw error;
-
-          await refreshAuthUI();
-        } catch (e) {
-          safeSet(authStatusEl, `Sign-in failed: ${(e && e.message) ? e.message : String(e)}`);
-        } finally {
-          loginButton.disabled = false;
-        }
-      });
-    }
-
-    if (signupButton) {
-      signupButton.addEventListener("click", async () => {
-        try {
-          const email = (authEmailEl && authEmailEl.value ? authEmailEl.value : "").trim();
-          const password = authPasswordEl && authPasswordEl.value ? authPasswordEl.value : "";
-
-          if (!email || !password) {
-            safeSet(authStatusEl, "Enter email + password, then click Sign Up.");
-            return;
-          }
-
-          signupButton.disabled = true;
-          safeSet(authStatusEl, "Signing up… (you may need to confirm via email)");
-
-          const { error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: { emailRedirectTo: window.location.href },
-          });
-          if (error) throw error;
-
-          safeSet(authStatusEl, "Sign-up OK. If email confirmation is enabled, check your inbox then Sign In.");
-          await refreshAuthUI();
-        } catch (e) {
-          safeSet(authStatusEl, `Sign-up failed: ${(e && e.message) ? e.message : String(e)}`);
-        } finally {
-          signupButton.disabled = false;
-        }
-      });
-    }
-
-    if (forgotButton) {
-      forgotButton.addEventListener("click", async () => {
-        try {
-          const email = (authEmailEl && authEmailEl.value ? authEmailEl.value : "").trim();
-          if (!email) {
-            safeSet(authStatusEl, "Enter your email, then click Forgot Password.");
-            return;
-          }
-
-          forgotButton.disabled = true;
-          safeSet(authStatusEl, "Sending password reset email…");
-
-          const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.href,
-          });
-          if (error) throw error;
-
-          safeSet(authStatusEl, "Password reset email sent. Open the link, then set a new password here.");
-        } catch (e) {
-          safeSet(authStatusEl, `Reset failed: ${(e && e.message) ? e.message : String(e)}`);
-        } finally {
-          forgotButton.disabled = false;
-        }
-      });
-    }
-
-    if (logoutButton) {
-      logoutButton.addEventListener("click", async () => {
-        try {
-          logoutButton.disabled = true;
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          await refreshAuthUI();
-        } catch (e) {
-          safeSet(authStatusEl, `Sign-out failed: ${(e && e.message) ? e.message : String(e)}`);
-        } finally {
-          logoutButton.disabled = false;
-        }
-      });
-    }
-
-    if (askButton) askButton.addEventListener("click", handleAsk);
-
-    if (clearButton) {
-      clearButton.addEventListener("click", () => {
-        if (questionEl) questionEl.value = "";
-        if (contextEl) contextEl.value = "";
-        if (answerOutputEl) {
-          answerOutputEl.classList.add("placeholder");
-          answerOutputEl.textContent = "Your answer will appear here.";
-        }
-        safeSet(debugOutputEl, "{}");
-        safeSet(debugStatusEl, "no response yet");
-        setStatus("idle", "Idle");
-        refreshAuthUI().catch(() => {});
-        if (questionEl) questionEl.focus();
-      });
-    }
-
-    // Keep UI synced if session changes in another tab/window.
-    supabase.auth.onAuthStateChange(() => refreshAuthUI().catch(() => {}));
-
-    // Initial UI state
-    setStatus("ok", `Active • ${BUILD_ID}`);
-    refreshAuthUI().catch((e) => {
-      safeSet(authStatusEl, `Init failed: ${(e && e.message) ? e.message : String(e)}`);
+    // If a recovery / oauth link drops tokens into the URL, supabase-js will often pick it up
+    // and fire an auth event. We'll listen and show the recovery UI when needed.
+    supabase.auth.onAuthStateChange((event, session) => {
+      // PASSWORD_RECOVERY is common for reset links.
+      if (event === "PASSWORD_RECOVERY") show($("recoveryBox"), true);
+      // Some projects may emit SIGNED_IN after recovery exchange.
+      if (event === "SIGNED_IN") show($("recoveryBox"), false);
+      renderSession().catch(() => {});
     });
-  })();
+
+    // Initial render
+    renderSession().catch(err => { $("authOut").textContent = String(err); });
+
+    $("btnSignIn").onclick = async () => {
+      try {
+        const email = $("email").value.trim();
+        const password = $("password").value;
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        show($("recoveryBox"), false);
+        await renderSession();
+      } catch (e) {
+        $("authOut").textContent = "Sign-in failed: " + (e?.message ?? String(e));
+      }
+    };
+
+    $("btnSignOut").onclick = async () => {
+      try {
+        await supabase.auth.signOut();
+        show($("recoveryBox"), false);
+        await renderSession();
+      } catch (e) {
+        $("authOut").textContent = "Sign-out failed: " + (e?.message ?? String(e));
+      }
+    };
+
+    $("btnForgot").onclick = async () => {
+      try {
+        const email = $("email").value.trim();
+        if (!email) throw new Error("Enter your email first.");
+        const redirectTo = window.location.origin + window.location.pathname;
+        const { data, error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+        if (error) throw error;
+        $("authOut").textContent = "Password reset email sent. Check inbox/spam. Then click the link.";
+      } catch (e) {
+        $("authOut").textContent = "Reset failed: " + (e?.message ?? String(e));
+      }
+    };
+
+    $("btnSetPassword").onclick = async () => {
+      try {
+        const newPassword = $("newPassword").value;
+        if (!newPassword || newPassword.length < 6) throw new Error("Password must be at least 6 characters.");
+        const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        show($("recoveryBox"), false);
+        $("authOut").textContent = "Password updated. Now you can sign in normally.";
+        await renderSession();
+      } catch (e) {
+        $("authOut").textContent = "Set password failed: " + (e?.message ?? String(e));
+      }
+    };
+
+    $("btnShowToken").onclick = async () => {
+      try {
+        const token = await requireAccessToken();
+        $("tokenOut").textContent = token;
+        show($("tokenOut"), true);
+      } catch (e) {
+        $("tokenOut").textContent = "No token: " + (e?.message ?? String(e));
+        show($("tokenOut"), true);
+      }
+    };
+
+    async function fetchJson(url, opts) {
+      const res = await fetch(url, opts);
+      const text = await res.text();
+      let json = null;
+      try { json = JSON.parse(text); } catch {}
+      return { status: res.status, json, raw: text };
+    }
+
+    $("btnAsk").onclick = async () => {
+      try {
+        const base = $("functionsBase").value.trim().replace(/\/+$/, "");
+        const url = base + "/ask-tpar";
+        const question = $("question").value.trim();
+        if (!question) throw new Error("Enter a question.");
+        const debugRaw = $("debug").value.trim().toLowerCase();
+        const debug = debugRaw === "true" || debugRaw === "1" || debugRaw === "yes";
+
+        let context = null;
+        const ctxTxt = $("context").value.trim();
+        if (ctxTxt) {
+          try { context = JSON.parse(ctxTxt); }
+          catch { throw new Error("Context must be valid JSON (or empty)."); }
+        }
+
+        const token = await requireAccessToken();
+        const payload = { question, context, debug };
+
+        const result = await fetchJson(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        $("askOut").textContent = JSON.stringify(result, null, 2);
+      } catch (e) {
+        $("askOut").textContent = "Ask failed: " + (e?.message ?? String(e));
+      }
+    };
+
+    $("btnSnapshot").onclick = async () => {
+      try {
+        const base = $("functionsBase").value.trim().replace(/\/+$/, "");
+        const includeDocsRaw = $("includeDocs").value.trim().toLowerCase();
+        const includeDocs = includeDocsRaw === "true" || includeDocsRaw === "1" || includeDocsRaw === "yes";
+        const url = base + "/tpar-dev-snapshot" + (includeDocs ? "?include_docs=true" : "");
+
+        const token = await requireAccessToken();
+        const result = await fetchJson(url, {
+          method: "GET",
+          headers: {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+
+        $("snapOut").textContent = JSON.stringify(result, null, 2);
+      } catch (e) {
+        $("snapOut").textContent = "Snapshot failed: " + (e?.message ?? String(e));
+      }
+    };
   </script>
 </body>
-</html>
-
 </html>
