@@ -503,9 +503,9 @@
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
     // === CONFIG – YOU EDIT THESE LINES ===
-    const SUPABASE_URL = https://bwpoqsfrygyopwxmegax.supabase.co;
-    const ASK_TPAR_ENDPOINT = https://bwpoqsfrygyopwxmegax.supabase.co/functions/v1/ask-tpar;
-    const SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3cG9xc2ZyeWd5b3B3eG1lZ2F4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzNDAzMzksImV4cCI6MjA3ODkxNjMzOX0.jKw2v-grZu9eftZs4ARbMCCgwkhc5JQFMWNGtidzXfU;
+    const SUPABASE_URL = "https://bwpoqsfrygyopwxmegax.supabase.co";
+    const ASK_TPAR_ENDPOINT = `${SUPABASE_URL}/functions/v1/ask-tpar';
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3cG9xc2ZyeWd5b3B3eG1lZ2F4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcwMzkyNTcsImV4cCI6MjA4MjM5OTI1N30.HMwTK2obYHnv96hOcB6XMSkPXJicWL4nhUS2c7wUb2Q";
     // ===================================
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
