@@ -177,7 +177,8 @@
     }
 
     textarea,
-    input[type="text"] {
+    input[type="text"],
+    input[type="password"] {
       width: 100%;
       padding: 10px 11px;
       border-radius: 10px;
@@ -450,6 +451,35 @@
 
           <div class="plumbing-strip" aria-hidden="true"></div>
 
+          <div class="input-group" style="margin-top: 2px">
+            <label>Sign in (required)</label>
+            <div class="row">
+              <div>
+                <input id="authEmail" type="text" placeholder="email (e.g. you@tulsapar.com)" />
+              </div>
+              <div>
+                <input id="authPassword" type="password" placeholder="password" />
+              </div>
+            </div>
+
+            <div class="button-row">
+              <button id="loginButton" class="secondary" type="button">
+                <span>Sign In</span>
+              </button>
+              <button id="signupButton" class="secondary" type="button">
+                <span>Sign Up</span>
+              </button>
+              <button id="forgotButton" class="secondary" type="button">
+                <span>Forgot Password</span>
+              </button>
+              <button id="logoutButton" class="secondary" type="button" disabled>
+                <span>Sign Out</span>
+              </button>
+            </div>
+
+            <div class="debug-note" id="authStatus">Not signed in</div>
+          </div>
+
           <div class="debug-note">
             Debug – raw JSON (or whatever the function actually sent) from ask-tpar will appear
             here.
@@ -469,11 +499,16 @@
     </main>
   </div>
 
-  <script>
-    // === CONFIG – YOU EDIT ONLY THESE TWO LINES ===
-    const ASK_TPAR_ENDPOINT = "https://bwpoqsfrygyopwxmegax.supabase.co/functions/v1/ask-tpar";
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    // === CONFIG – YOU EDIT THESE LINES ===
+    const SUPABASE_URL = "https://bwpoqsfrygyopwxmegax.supabase.co";
+    const ASK_TPAR_ENDPOINT = `${SUPABASE_URL}/functions/v1/ask-tpar`;
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3cG9xc2ZyeWd5b3B3eG1lZ2F4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzNDAzMzksImV4cCI6MjA3ODkxNjMzOX0.jKw2v-grZu9eftZs4ARbMCCgwkhc5JQFMWNGtidzXfU";
-    // ===============================================
+    // ===================================
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const questionEl = document.getElementById("question");
     const contextEl = document.getElementById("context");
@@ -484,6 +519,14 @@
     const debugStatusEl = document.getElementById("debugStatus");
     const statusDotEl = document.getElementById("statusDot");
     const statusTextEl = document.getElementById("statusText");
+
+    const authEmailEl = document.getElementById("authEmail");
+    const authPasswordEl = document.getElementById("authPassword");
+    const loginButton = document.getElementById("loginButton");
+    const signupButton = document.getElementById("signupButton");
+    const forgotButton = document.getElementById("forgotButton");
+    const logoutButton = document.getElementById("logoutButton");
+    const authStatusEl = document.getElementById("authStatus");
 
     function setStatus(state, message) {
       if (state === "loading") {
@@ -505,6 +548,131 @@
       }
     }
 
+
+    function setAuthUI(session) {
+      const signedIn = Boolean(session && session.user);
+      if (signedIn) {
+        const email = session.user.email || "signed in";
+        authStatusEl.textContent = `Signed in as ${email}`;
+        loginButton.disabled = true;
+        logoutButton.disabled = false;
+        askButton.disabled = false;
+      } else {
+        authStatusEl.textContent = "Not signed in";
+        loginButton.disabled = false;
+        logoutButton.disabled = true;
+        askButton.disabled = true;
+      }
+    }
+
+    async function refreshAuthUI() {
+      const { data } = await supabase.auth.getSession();
+      setAuthUI(data.session);
+      return data.session;
+    }
+
+    async function requireAccessToken() {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token || null;
+      if (!token) throw new Error("Not signed in. Click Sign In first.");
+      return token;
+    }
+
+    loginButton.addEventListener("click", async () => {
+      try {
+        const email = (authEmailEl.value || "").trim();
+        const password = authPasswordEl.value || "";
+        if (!email || !password) {
+          authStatusEl.textContent = "Enter email + password.";
+          return;
+        }
+        loginButton.disabled = true;
+        authStatusEl.textContent = "Signing in…";
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        await refreshAuthUI();
+      } catch (e) {
+        authStatusEl.textContent = `Sign-in failed: ${e?.message || String(e)}`;
+      } finally {
+        loginButton.disabled = false;
+      }
+    });
+
+    signupButton.addEventListener("click", async () => {
+      try {
+        const email = (authEmailEl.value || "").trim();
+        const password = authPasswordEl.value || "";
+        if (!email || !password) {
+          authStatusEl.textContent = "Enter email + password, then click Sign Up.";
+          return;
+        }
+        signupButton.disabled = true;
+        authStatusEl.textContent = "Signing up… (you may need to confirm via email)";
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: window.location.href },
+        });
+        if (error) throw error;
+        authStatusEl.textContent = "Sign-up sent. Check your email if confirmation is required, then Sign In.";
+      } catch (e) {
+        authStatusEl.textContent = `Sign-up failed: ${e?.message || String(e)}`;
+      } finally {
+        signupButton.disabled = false;
+      }
+    });
+
+    forgotButton.addEventListener("click", async () => {
+      try {
+        const email = (authEmailEl.value || "").trim();
+        if (!email) {
+          authStatusEl.textContent = "Enter your email, then click Forgot Password.";
+          return;
+        }
+        forgotButton.disabled = true;
+        authStatusEl.textContent = "Sending password reset email…";
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.href,
+        });
+        if (error) throw error;
+        authStatusEl.textContent = "Password reset email sent. Open the link, then set a new password here.";
+      } catch (e) {
+        authStatusEl.textContent = `Reset failed: ${e?.message || String(e)}`;
+      } finally {
+        forgotButton.disabled = false;
+      }
+    });
+
+    logoutButton.addEventListener("click", async () => {
+      try {
+        logoutButton.disabled = true;
+        await supabase.auth.signOut();
+        await refreshAuthUI();
+      } catch (e) {
+        authStatusEl.textContent = `Sign-out failed: ${e?.message || String(e)}`;
+      } finally {
+        logoutButton.disabled = false;
+      }
+    });
+
+    // Keep UI synced if session changes in another tab/window.
+    // Also handle PASSWORD_RECOVERY so you can set a password on this same page.
+    supabase.auth.onAuthStateChange(async (event) => {
+      await refreshAuthUI();
+
+      if (event === "PASSWORD_RECOVERY") {
+        const newPassword = prompt("Enter a new password:");
+        if (!newPassword) return;
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) {
+          authStatusEl.textContent = `Password update failed: ${error.message}`;
+        } else {
+          authStatusEl.textContent = "Password updated. You should now be signed in.";
+          await refreshAuthUI();
+        }
+      }
+    });
+
     async function callAskTpar(question, context) {
   const payload = {
     question,
@@ -514,10 +682,10 @@
   const res = await fetch(ASK_TPAR_ENDPOINT, {
     method: "POST",
     headers: {
-  "Content-Type": "application/json",
-  apikey: SUPABASE_ANON_KEY,
-  Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-},
+      "Content-Type": "application/json",
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${await requireAccessToken()}`,
+    },
 
     body: JSON.stringify(payload),
   });
@@ -616,10 +784,15 @@
       debugOutputEl.textContent = "{}";
       debugStatusEl.textContent = "no response yet";
       setStatus("idle", "Idle");
+    // Require sign-in before use
+    refreshAuthUI();
       questionEl.focus();
     });
 
     setStatus("idle", "Idle");
+
+    // Initial auth state
+    refreshAuthUI();
   </script>
 </body>
 </html>
