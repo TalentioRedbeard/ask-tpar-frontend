@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>Reset Password</title></head>
+  <body>
+    <h1>Set a new password</h1>
+    <form id="form">
+      <input id="pw" type="password" placeholder="New password" minlength="8" required />
+      <button type="submit">Update password</button>
+    </form>
+    <pre id="out"></pre>
+
+    <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+      const SUPABASE_URL = "****your supabase url****";
+      const SUPABASE_ANON_KEY = "****your anon key****";
+      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      const out = document.getElementById("out");
+
+      // Optional: listen for PASSWORD_RECOVERY event
+      supabase.auth.onAuthStateChange((event) => {
+        out.textContent = `Auth event: ${event}`;
+      });
+
+      document.getElementById("form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const newPassword = document.getElementById("pw").value;
+
+        const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) out.textContent = error.message;
+        else out.textContent = "Password updated. You can now sign in.";
+      });
+    </script>
+  </body>
+</html>
