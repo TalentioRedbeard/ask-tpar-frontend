@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>TPAR Dev Console</title>
+  <title>TPAR Dev Console (v3)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 18px; line-height: 1.35; }
@@ -18,22 +18,21 @@
     .pill { display:inline-block; padding: 4px 10px; border-radius: 999px; background:#f2f2f2; font-size:12px; }
     .ok { background:#e7f8ed; }
     .bad { background:#fde7ea; }
+    code { background:#f2f2f2; padding: 1px 6px; border-radius: 6px; }
   </style>
 </head>
 <body>
-  <h2>TPAR Dev Console</h2>
-  <div class="muted">
-    If buttons “do nothing”, your JS didn’t boot. This page will show that in <span class="pill">Boot</span>.
-  </div>
+  <h2>TPAR Dev Console <span class="pill">v3</span></h2>
+  <div class="muted">If buttons do nothing, your JS didn’t boot. This page will show that in <span class="pill">Boot</span>.</div>
 
   <div style="margin-top:10px">
-    <span class="pill" id="bootPill">Boot: starting…</span>
-    <span class="pill" id="authPill">Auth: unknown</span>
+    <span class="pill bad" id="bootPill">Boot: not loaded</span>
+    <span class="pill bad" id="authPill">Auth: not initialized</span>
   </div>
 
   <div class="row" style="margin-top:12px">
     <div class="card">
-      <h3>Config (client-safe)</h3>
+      <h3>Config</h3>
 
       <label>Supabase URL</label>
       <input id="sbUrl" value="https://bwpoqsfrygyopwxmegax.supabase.co"/>
@@ -45,7 +44,6 @@
       <input id="fnBase" value="https://bwpoqsfrygyopwxmegax.functions.supabase.co"/>
 
       <button id="btnInit" class="secondary" type="button">Initialize Supabase client</button>
-
       <pre id="bootOut" style="margin-top:10px"></pre>
     </div>
 
@@ -65,9 +63,6 @@
 
       <label>Password reset email</label>
       <button id="btnForgot" class="secondary" type="button">Send password reset email</button>
-      <div class="muted" style="margin-top:6px">
-        This uses <code>resetPasswordForEmail()</code> and redirects back to this page.
-      </div>
 
       <div id="recoveryBox" style="display:none; margin-top:12px">
         <label>Set new password (after clicking email link)</label>
@@ -97,7 +92,7 @@
 
     <div class="card">
       <h3>tpar-dev-snapshot</h3>
-      <label>include_docs (admin only)</label>
+      <label>include_docs</label>
       <input id="includeDocs" placeholder="true or false"/>
 
       <button id="btnSnap" type="button">GET /tpar-dev-snapshot</button>
@@ -106,226 +101,225 @@
   </div>
 
   <script>
-    // Show any boot-time JS errors inside the page (no DevTools required).
-    window.addEventListener("error", (e) => {
-      const out = document.getElementById("bootOut");
-      if (out) out.textContent = "JS Error: " + (e?.message || String(e));
-      const pill = document.getElementById("bootPill");
-      if (pill) { pill.textContent = "Boot: failed"; pill.className = "pill bad"; }
-    });
+    (function () {
+      const $ = (id) => document.getElementById(id);
+      const setPill = (id, ok, text) => {
+        const el = $(id);
+        if (!el) return;
+        el.textContent = text;
+        el.className = "pill " + (ok ? "ok" : "bad");
+      };
+      const safeSet = (el, text) => { if (el) el.textContent = text || ""; };
 
-    const $ = (id) => document.getElementById(id);
-    const setPill = (id, ok, text) => {
-      const el = $(id);
-      if (!el) return;
-      el.textContent = text;
-      el.className = "pill " + (ok ? "ok" : "bad");
-    };
-    const safeSet = (el, text) => { if (el) el.textContent = text || ""; };
+      // PROOF JS BOOTED
+      setPill("bootPill", true, "Boot: JS loaded");
 
-    // Dynamic loader with fallback, because sometimes jsdelivr gets blocked.
-    function loadSupabaseUmd() {
-      return new Promise((resolve, reject) => {
-        function load(src) {
-          return new Promise((res, rej) => {
-            const s = document.createElement("script");
-            s.src = src;
-            s.async = true;
-            s.onload = () => res(true);
-            s.onerror = () => rej(new Error("Failed to load: " + src));
-            document.head.appendChild(s);
-          });
-        }
-
-        load("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2")
-          .catch(() => load("https://unpkg.com/@supabase/supabase-js@2"))
-          .then(() => {
-            if (!window.supabase || !window.supabase.createClient) {
-              throw new Error("Supabase UMD loaded but window.supabase.createClient not found");
-            }
-            resolve(true);
-          })
-          .catch(reject);
-      });
-    }
-
-    let sb = null;
-
-    async function initClient() {
-      const out = $("bootOut");
-      try {
-        safeSet(out, "Loading supabase-js…");
-        await loadSupabaseUmd();
-
-        const url = $("sbUrl").value.trim();
-        const anon = $("sbAnon").value.trim();
-        if (!url || !anon) throw new Error("Paste Supabase URL + anon key, then click Initialize.");
-
-        sb = window.supabase.createClient(url, anon);
-
-        setPill("bootPill", true, "Boot: ok");
-        safeSet(out, "Supabase client initialized.");
-
-        sb.auth.onAuthStateChange((event, session) => {
-          if (event === "PASSWORD_RECOVERY") $("recoveryBox").style.display = "";
-          if (event === "SIGNED_IN") $("recoveryBox").style.display = "none";
-          renderAuth(session).catch(() => {});
-        });
-
-        const { data } = await sb.auth.getSession();
-        await renderAuth(data?.session || null);
-      } catch (e) {
+      window.addEventListener("error", (e) => {
+        safeSet($("bootOut"), "JS Error: " + (e?.message || String(e)));
         setPill("bootPill", false, "Boot: failed");
-        safeSet(out, "Boot failed: " + (e?.message || String(e)));
-      }
-    }
+      });
 
-    async function renderAuth(session) {
-      const out = $("authOut");
-      if (!sb) {
-        setPill("authPill", false, "Auth: no client");
-        safeSet(out, "Initialize Supabase client first.");
-        return;
-      }
-
-      const signedIn = !!session?.user?.email;
-      setPill("authPill", signedIn, signedIn ? ("Auth: " + session.user.email) : "Auth: signed out");
-      safeSet(out, JSON.stringify({
-        signed_in: signedIn,
-        user_email: session?.user?.email ?? null,
-        expires_at: session?.expires_at ?? null
-      }, null, 2));
-    }
-
-    async function requireToken() {
-      if (!sb) throw new Error("Initialize Supabase client first.");
-      const { data, error } = await sb.auth.getSession();
-      if (error) throw error;
-      const token = data?.session?.access_token;
-      if (!token) throw new Error("Not signed in (no access_token).");
-      return token;
-    }
-
-    async function fetchJson(url, opts) {
-      const res = await fetch(url, opts);
-      const text = await res.text();
-      let json = null;
-      try { json = JSON.parse(text); } catch {}
-      return { status: res.status, json, raw: text };
-    }
-
-    $("btnInit").onclick = initClient;
-
-    $("btnSignIn").onclick = async () => {
-      try {
-        if (!sb) throw new Error("Initialize Supabase client first.");
-        const email = $("email").value.trim();
-        const password = $("password").value;
-        if (!email || !password) throw new Error("Enter email + password.");
-        const { data, error } = await sb.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        const { data: sess } = await sb.auth.getSession();
-        await renderAuth(sess?.session || null);
-      } catch (e) {
-        safeSet($("authOut"), "Sign-in failed: " + (e?.message || String(e)));
-      }
-    };
-
-    $("btnSignOut").onclick = async () => {
-      try {
-        if (!sb) throw new Error("Initialize Supabase client first.");
-        const { error } = await sb.auth.signOut();
-        if (error) throw error;
-        const { data } = await sb.auth.getSession();
-        await renderAuth(data?.session || null);
-      } catch (e) {
-        safeSet($("authOut"), "Sign-out failed: " + (e?.message || String(e)));
-      }
-    };
-
-    $("btnForgot").onclick = async () => {
-      try {
-        if (!sb) throw new Error("Initialize Supabase client first.");
-        const email = $("email").value.trim();
-        if (!email) throw new Error("Enter your email first.");
-        const redirectTo = window.location.origin + window.location.pathname;
-        const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
-        if (error) throw error;
-        safeSet($("authOut"), "Password reset email sent. Check inbox/spam. Click link to return here.");
-      } catch (e) {
-        safeSet($("authOut"), "Reset failed: " + (e?.message || String(e)));
-      }
-    };
-
-    $("btnSetPassword").onclick = async () => {
-      try {
-        if (!sb) throw new Error("Initialize Supabase client first.");
-        const pw = $("newPassword").value;
-        if (!pw || pw.length < 6) throw new Error("Password must be at least 6 characters.");
-        const { error } = await sb.auth.updateUser({ password: pw });
-        if (error) throw error;
-        $("recoveryBox").style.display = "none";
-        safeSet($("authOut"), "Password updated. You can sign in normally now.");
-      } catch (e) {
-        safeSet($("authOut"), "Set password failed: " + (e?.message || String(e)));
-      }
-    };
-
-    $("btnShowToken").onclick = async () => {
-      try {
-        const token = await requireToken();
-        $("tokenOut").style.display = "";
-        $("tokenOut").textContent = token;
-      } catch (e) {
-        $("tokenOut").style.display = "";
-        $("tokenOut").textContent = "No token: " + (e?.message || String(e));
-      }
-    };
-
-    $("btnAsk").onclick = async () => {
-      try {
-        const base = $("fnBase").value.trim().replace(/\/+$/, "");
-        const url = base + "/ask-tpar";
-        const question = $("question").value.trim();
-        if (!question) throw new Error("Enter a question.");
-        let context = null;
-        const ctx = $("context").value.trim();
-        if (ctx) context = JSON.parse(ctx);
-
-        const token = await requireToken();
-        const anon = $("sbAnon").value.trim();
-        const result = await fetchJson(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "apikey": anon, "Authorization": "Bearer " + token },
-          body: JSON.stringify({ question, context })
+      function loadSupabaseUmd() {
+        return new Promise((resolve, reject) => {
+          function load(src) {
+            return new Promise((res, rej) => {
+              const s = document.createElement("script");
+              s.src = src;
+              s.async = true;
+              s.onload = () => res(true);
+              s.onerror = () => rej(new Error("Failed to load: " + src));
+              document.head.appendChild(s);
+            });
+          }
+          load("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2")
+            .catch(() => load("https://unpkg.com/@supabase/supabase-js@2"))
+            .then(() => {
+              if (!window.supabase || !window.supabase.createClient) {
+                throw new Error("Supabase UMD loaded but window.supabase.createClient not found");
+              }
+              resolve(true);
+            })
+            .catch(reject);
         });
-        $("askOut").textContent = JSON.stringify(result, null, 2);
-      } catch (e) {
-        $("askOut").textContent = "Ask failed: " + (e?.message || String(e));
       }
-    };
 
-    $("btnSnap").onclick = async () => {
-      try {
-        const base = $("fnBase").value.trim().replace(/\/+$/, "");
-        const includeDocs = ($("includeDocs").value.trim().toLowerCase() === "true");
-        const url = base + "/tpar-dev-snapshot" + (includeDocs ? "?include_docs=true" : "");
-        const token = await requireToken();
-        const anon = $("sbAnon").value.trim();
-        const result = await fetchJson(url, {
-          method: "GET",
-          headers: { "apikey": anon, "Authorization": "Bearer " + token }
-        });
-        $("snapOut").textContent = JSON.stringify(result, null, 2);
-      } catch (e) {
-        $("snapOut").textContent = "Snapshot failed: " + (e?.message || String(e)));
+      let sb = null;
+
+      async function renderAuth(session) {
+        if (!sb) {
+          setPill("authPill", false, "Auth: no client");
+          safeSet($("authOut"), "Initialize Supabase client first.");
+          return;
+        }
+        const signedIn = !!session?.user?.email;
+        setPill("authPill", signedIn, signedIn ? ("Auth: " + session.user.email) : "Auth: signed out");
+        safeSet($("authOut"), JSON.stringify({
+          signed_in: signedIn,
+          user_email: session?.user?.email ?? null,
+          expires_at: session?.expires_at ?? null
+        }, null, 2));
       }
-    };
 
-    // Start in a safe state: user must click Initialize so there's no silent failure.
-    setPill("bootPill", false, "Boot: not initialized");
-    setPill("authPill", false, "Auth: not initialized");
-    $("bootOut").textContent = "Paste anon key, then click Initialize. If you see Boot: failed, the reason will be printed here.";
+      async function initClient() {
+        try {
+          safeSet($("bootOut"), "Loading supabase-js…");
+          await loadSupabaseUmd();
+
+          const url = $("sbUrl").value.trim();
+          const anon = $("sbAnon").value.trim();
+          if (!url || !anon) throw new Error("Paste Supabase URL + anon key, then click Initialize.");
+
+          sb = window.supabase.createClient(url, anon);
+
+          sb.auth.onAuthStateChange((event, session) => {
+            if (event === "PASSWORD_RECOVERY") $("recoveryBox").style.display = "";
+            if (event === "SIGNED_IN") $("recoveryBox").style.display = "none";
+            renderAuth(session).catch(() => {});
+          });
+
+          const { data, error } = await sb.auth.getSession();
+          if (error) throw error;
+
+          safeSet($("bootOut"), "Supabase client initialized.");
+          await renderAuth(data?.session || null);
+        } catch (e) {
+          setPill("bootPill", false, "Boot: failed");
+          safeSet($("bootOut"), "Boot failed: " + (e?.message || String(e)));
+        }
+      }
+
+      async function requireToken() {
+        if (!sb) throw new Error("Initialize Supabase client first.");
+        const { data, error } = await sb.auth.getSession();
+        if (error) throw error;
+        const token = data?.session?.access_token;
+        if (!token) throw new Error("Not signed in (no access_token).");
+        return token;
+      }
+
+      async function fetchJson(url, opts) {
+        const res = await fetch(url, opts);
+        const text = await res.text();
+        let json = null;
+        try { json = JSON.parse(text); } catch {}
+        return { status: res.status, json, raw: text };
+      }
+
+      $("btnInit").onclick = initClient;
+
+      $("btnSignIn").onclick = async () => {
+        try {
+          if (!sb) throw new Error("Initialize Supabase client first.");
+          const email = $("email").value.trim();
+          const password = $("password").value;
+          const { error } = await sb.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          const { data } = await sb.auth.getSession();
+          await renderAuth(data?.session || null);
+        } catch (e) {
+          safeSet($("authOut"), "Sign-in failed: " + (e?.message || String(e)));
+        }
+      };
+
+      $("btnSignOut").onclick = async () => {
+        try {
+          if (!sb) throw new Error("Initialize Supabase client first.");
+          const { error } = await sb.auth.signOut();
+          if (error) throw error;
+          const { data } = await sb.auth.getSession();
+          await renderAuth(data?.session || null);
+        } catch (e) {
+          safeSet($("authOut"), "Sign-out failed: " + (e?.message || String(e)));
+        }
+      };
+
+      $("btnForgot").onclick = async () => {
+        try {
+          if (!sb) throw new Error("Initialize Supabase client first.");
+          const email = $("email").value.trim();
+          if (!email) throw new Error("Enter your email first.");
+          const redirectTo = window.location.origin + window.location.pathname;
+          const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+          if (error) throw error;
+          safeSet($("authOut"), "Password reset email sent. Check inbox/spam. Click the link to return here.");
+        } catch (e) {
+          safeSet($("authOut"), "Reset failed: " + (e?.message || String(e)));
+        }
+      };
+
+      $("btnSetPassword").onclick = async () => {
+        try {
+          if (!sb) throw new Error("Initialize Supabase client first.");
+          const pw = $("newPassword").value;
+          if (!pw || pw.length < 6) throw new Error("Password must be at least 6 characters.");
+          const { error } = await sb.auth.updateUser({ password: pw });
+          if (error) throw error;
+          $("recoveryBox").style.display = "none";
+          safeSet($("authOut"), "Password updated. You can sign in normally now.");
+        } catch (e) {
+          safeSet($("authOut"), "Set password failed: " + (e?.message || String(e)));
+        }
+      };
+
+      $("btnShowToken").onclick = async () => {
+        try {
+          const token = await requireToken();
+          $("tokenOut").style.display = "";
+          $("tokenOut").textContent = token;
+        } catch (e) {
+          $("tokenOut").style.display = "";
+          $("tokenOut").textContent = "No token: " + (e?.message || String(e));
+        }
+      };
+
+      $("btnAsk").onclick = async () => {
+        try {
+          const base = $("fnBase").value.trim().replace(/\/+$/, "");
+          const url = base + "/ask-tpar";
+          const question = $("question").value.trim();
+          if (!question) throw new Error("Enter a question.");
+
+          let context = null;
+          const ctx = $("context").value.trim();
+          if (ctx) context = JSON.parse(ctx);
+
+          const token = await requireToken();
+          const anon = $("sbAnon").value.trim();
+
+          const result = await fetchJson(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "apikey": anon, "Authorization": "Bearer " + token },
+            body: JSON.stringify({ question, context })
+          });
+
+          $("askOut").textContent = JSON.stringify(result, null, 2);
+        } catch (e) {
+          $("askOut").textContent = "Ask failed: " + (e?.message || String(e));
+        }
+      };
+
+      $("btnSnap").onclick = async () => {
+        try {
+          const base = $("fnBase").value.trim().replace(/\/+$/, "");
+          const includeDocs = ($("includeDocs").value.trim().toLowerCase() === "true");
+          const url = base + "/tpar-dev-snapshot" + (includeDocs ? "?include_docs=true" : "");
+
+          const token = await requireToken();
+          const anon = $("sbAnon").value.trim();
+
+          const result = await fetchJson(url, {
+            method: "GET",
+            headers: { "apikey": anon, "Authorization": "Bearer " + token }
+          });
+
+          $("snapOut").textContent = JSON.stringify(result, null, 2);
+        } catch (e) {
+          $("snapOut").textContent = "Snapshot failed: " + (e?.message || String(e));
+        }
+      };
+
+      safeSet($("bootOut"), "Paste anon key, then click Initialize. If Boot fails, the reason will show here.");
+    })();
   </script>
 </body>
 </html>
