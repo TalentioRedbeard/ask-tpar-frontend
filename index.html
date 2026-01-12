@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>TPAR Dev Console (v3)</title>
+  <title>TPAR Dev Console (v4)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 18px; line-height: 1.35; }
@@ -19,11 +19,13 @@
     .ok { background:#e7f8ed; }
     .bad { background:#fde7ea; }
     code { background:#f2f2f2; padding: 1px 6px; border-radius: 6px; }
+    .inline { display:flex; gap:10px; align-items:center; margin-top:10px; }
+    .inline input[type="checkbox"] { width:auto; margin:0; }
   </style>
 </head>
 <body>
-  <h2>TPAR Dev Console <span class="pill">v3</span></h2>
-  <div class="muted">If buttons do nothing, your JS didn’t boot. This page will show that in <span class="pill">Boot</span>.</div>
+  <h2>TPAR Dev Console <span class="pill">v4</span></h2>
+  <div class="muted">This page is for development. Debug mode can include DB results (admin only).</div>
 
   <div style="margin-top:10px">
     <span class="pill bad" id="bootPill">Boot: not loaded</span>
@@ -61,6 +63,11 @@
         <div style="flex:1"><button id="btnSignOut" class="secondary" type="button">Sign out</button></div>
       </div>
 
+      <div class="inline">
+        <input id="debugMode" type="checkbox" />
+        <label for="debugMode" style="margin:0">Debug mode (include DB result when allowed)</label>
+      </div>
+
       <label>Password reset email</label>
       <button id="btnForgot" class="secondary" type="button">Send password reset email</button>
 
@@ -71,7 +78,8 @@
       </div>
 
       <div style="margin-top:10px">
-        <button id="btnShowToken" class="secondary" type="button">Show current access token</button>
+        <button id="btnRefreshSession" class="secondary" type="button">Refresh session</button>
+        <button id="btnShowToken" class="secondary" type="button" style="margin-top:10px">Show current access token</button>
         <pre id="tokenOut" style="display:none; margin-top:10px"></pre>
       </div>
 
@@ -87,16 +95,29 @@
       <textarea id="context" placeholder='{"anything":"you want"}'></textarea>
 
       <button id="btnAsk" type="button">POST /ask-tpar</button>
-      <pre id="askOut" style="margin-top:10px"></pre>
+
+      <h4 style="margin-top:12px">Errors / Debug</h4>
+      <pre id="askErr"></pre>
+
+      <h4 style="margin-top:12px">Response</h4>
+      <pre id="askOut"></pre>
     </div>
 
     <div class="card">
       <h3>tpar-dev-snapshot</h3>
+      <label>mode</label>
+      <input id="snapMode" placeholder="lite | full | hash (if supported)"/>
+
       <label>include_docs</label>
       <input id="includeDocs" placeholder="true or false"/>
 
       <button id="btnSnap" type="button">GET /tpar-dev-snapshot</button>
-      <pre id="snapOut" style="margin-top:10px"></pre>
+
+      <h4 style="margin-top:12px">Errors / Debug</h4>
+      <pre id="snapErr"></pre>
+
+      <h4 style="margin-top:12px">Response</h4>
+      <pre id="snapOut"></pre>
     </div>
   </div>
 
@@ -111,7 +132,6 @@
       };
       const safeSet = (el, text) => { if (el) el.textContent = text || ""; };
 
-      // PROOF JS BOOTED
       setPill("bootPill", true, "Boot: JS loaded");
 
       window.addEventListener("error", (e) => {
@@ -233,6 +253,19 @@
         }
       };
 
+      $("btnRefreshSession").onclick = async () => {
+        try {
+          if (!sb) throw new Error("Initialize Supabase client first.");
+          const { data, error } = await sb.auth.getSession();
+          if (error) throw error;
+          await renderAuth(data?.session || null);
+          safeSet($("tokenOut"), "");
+          $("tokenOut").style.display = "none";
+        } catch (e) {
+          safeSet($("authOut"), "Refresh failed: " + (e?.message || String(e)));
+        }
+      };
+
       $("btnForgot").onclick = async () => {
         try {
           if (!sb) throw new Error("Initialize Supabase client first.");
@@ -273,6 +306,8 @@
       };
 
       $("btnAsk").onclick = async () => {
+        safeSet($("askErr"), "");
+        safeSet($("askOut"), "");
         try {
           const base = $("fnBase").value.trim().replace(/\/+$/, "");
           const url = base + "/ask-tpar";
@@ -283,26 +318,44 @@
           const ctx = $("context").value.trim();
           if (ctx) context = JSON.parse(ctx);
 
+          const debug = $("debugMode").checked;
+          const payload = {
+            question,
+            context,
+            debug,
+            include_db_result: debug
+          };
+
           const token = await requireToken();
           const anon = $("sbAnon").value.trim();
 
           const result = await fetchJson(url, {
             method: "POST",
             headers: { "Content-Type": "application/json", "apikey": anon, "Authorization": "Bearer " + token },
-            body: JSON.stringify({ question, context })
+            body: JSON.stringify(payload)
           });
 
-          $("askOut").textContent = JSON.stringify(result, null, 2);
+          if (result.status >= 400) {
+            safeSet($("askErr"), JSON.stringify(result, null, 2));
+          }
+          safeSet($("askOut"), JSON.stringify(result, null, 2));
         } catch (e) {
-          $("askOut").textContent = "Ask failed: " + (e?.message || String(e));
+          safeSet($("askErr"), "Ask failed: " + (e?.message || String(e)));
         }
       };
 
       $("btnSnap").onclick = async () => {
+        safeSet($("snapErr"), "");
+        safeSet($("snapOut"), "");
         try {
           const base = $("fnBase").value.trim().replace(/\/+$/, "");
           const includeDocs = ($("includeDocs").value.trim().toLowerCase() === "true");
-          const url = base + "/tpar-dev-snapshot" + (includeDocs ? "?include_docs=true" : "");
+          const mode = ($("snapMode").value.trim() || "");
+          const qs = new URLSearchParams();
+          if (includeDocs) qs.set("include_docs", "true");
+          if (mode) qs.set("mode", mode);
+
+          const url = base + "/tpar-dev-snapshot" + (qs.toString() ? ("?" + qs.toString()) : "");
 
           const token = await requireToken();
           const anon = $("sbAnon").value.trim();
@@ -312,13 +365,16 @@
             headers: { "apikey": anon, "Authorization": "Bearer " + token }
           });
 
-          $("snapOut").textContent = JSON.stringify(result, null, 2);
+          if (result.status >= 400) {
+            safeSet($("snapErr"), JSON.stringify(result, null, 2));
+          }
+          safeSet($("snapOut"), JSON.stringify(result, null, 2));
         } catch (e) {
-          $("snapOut").textContent = "Snapshot failed: " + (e?.message || String(e));
+          safeSet($("snapErr"), "Snapshot failed: " + (e?.message || String(e)));
         }
       };
 
-      safeSet($("bootOut"), "Paste anon key, then click Initialize. If Boot fails, the reason will show here.");
+      safeSet($("bootOut"), "Paste anon key, then click Initialize. Debug checkbox affects ask-tpar only.");
     })();
   </script>
 </body>
