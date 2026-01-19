@@ -43,7 +43,8 @@
       <input id="sbAnon" placeholder="paste anon key here"/>
 
       <label>Functions base URL</label>
-      <input id="fnBase" value="https://bwpoqsfrygyopwxmegax.functions.supabase.co"/>
+      <!-- IMPORTANT: use /functions/v1 for browser CORS + consistent routing -->
+      <input id="fnBase" value="https://bwpoqsfrygyopwxmegax.supabase.co/functions/v1"/>
 
       <button id="btnInit" class="secondary" type="button">Initialize Supabase client</button>
       <pre id="bootOut" style="margin-top:10px"></pre>
@@ -217,6 +218,21 @@
         return token;
       }
 
+      // Normalize common user mistakes for function base URL:
+      // - If they paste https://<ref>.supabase.co, turn it into .../functions/v1
+      // - If they paste https://<ref>.functions.supabase.co, keep but warn (CORS often fails)
+      function normalizeFnBase(raw) {
+        let base = (raw || "").trim().replace(/\/+$/, "");
+        if (!base) return base;
+        if (base.endsWith(".supabase.co")) return base + "/functions/v1";
+        if (base.includes(".supabase.co/") && !base.includes("/functions/v1")) {
+          // keep path but prefer /functions/v1 root
+          const m = base.match(/^(https:\/\/[a-z0-9]+\.supabase\.co)/i);
+          if (m) return m[1] + "/functions/v1";
+        }
+        return base;
+      }
+
       async function fetchJson(url, opts) {
         const res = await fetch(url, opts);
         const text = await res.text();
@@ -309,8 +325,11 @@
         safeSet($("askErr"), "");
         safeSet($("askOut"), "");
         try {
-          const base = $("fnBase").value.trim().replace(/\/+$/, "");
-          const url = base + "/ask-tpar";
+          const baseRaw = $("fnBase").value;
+          const base = normalizeFnBase(baseRaw);
+          $("fnBase").value = base; // reflect normalization
+          const url = base.replace(/\/+$/, "") + "/ask-tpar";
+
           const question = $("question").value.trim();
           if (!question) throw new Error("Enter a question.");
 
@@ -319,12 +338,7 @@
           if (ctx) context = JSON.parse(ctx);
 
           const debug = $("debugMode").checked;
-          const payload = {
-            question,
-            context,
-            debug,
-            include_db_result: debug
-          };
+          const payload = { question, context, debug, include_db_result: debug };
 
           const token = await requireToken();
           const anon = $("sbAnon").value.trim();
@@ -335,9 +349,7 @@
             body: JSON.stringify(payload)
           });
 
-          if (result.status >= 400) {
-            safeSet($("askErr"), JSON.stringify(result, null, 2));
-          }
+          if (result.status >= 400) safeSet($("askErr"), JSON.stringify(result, null, 2));
           safeSet($("askOut"), JSON.stringify(result, null, 2));
         } catch (e) {
           safeSet($("askErr"), "Ask failed: " + (e?.message || String(e)));
@@ -348,14 +360,16 @@
         safeSet($("snapErr"), "");
         safeSet($("snapOut"), "");
         try {
-          const base = $("fnBase").value.trim().replace(/\/+$/, "");
+          const baseRaw = $("fnBase").value;
+          const base = normalizeFnBase(baseRaw);
+          $("fnBase").value = base;
           const includeDocs = ($("includeDocs").value.trim().toLowerCase() === "true");
           const mode = ($("snapMode").value.trim() || "");
           const qs = new URLSearchParams();
           if (includeDocs) qs.set("include_docs", "true");
           if (mode) qs.set("mode", mode);
 
-          const url = base + "/tpar-dev-snapshot" + (qs.toString() ? ("?" + qs.toString()) : "");
+          const url = base.replace(/\/+$/, "") + "/tpar-dev-snapshot" + (qs.toString() ? ("?" + qs.toString()) : "");
 
           const token = await requireToken();
           const anon = $("sbAnon").value.trim();
@@ -365,16 +379,14 @@
             headers: { "apikey": anon, "Authorization": "Bearer " + token }
           });
 
-          if (result.status >= 400) {
-            safeSet($("snapErr"), JSON.stringify(result, null, 2));
-          }
+          if (result.status >= 400) safeSet($("snapErr"), JSON.stringify(result, null, 2));
           safeSet($("snapOut"), JSON.stringify(result, null, 2));
         } catch (e) {
           safeSet($("snapErr"), "Snapshot failed: " + (e?.message || String(e)));
         }
       };
 
-      safeSet($("bootOut"), "Paste anon key, then click Initialize. Debug checkbox affects ask-tpar only.");
+      safeSet($("bootOut"), "Paste anon key, then click Initialize. Function base defaults to /functions/v1.");
     })();
   </script>
 </body>
